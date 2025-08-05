@@ -1,0 +1,17 @@
+ir-vr.spice
+
+.model DIODE1 D (
+.include model.txt
++ )
+
+V1  n01 0   dc 0
+D1  0   n01 DIODE1
+R1  n01 0   4G
+
+.control
+dc V1 10 146 1
+
+set wr_singlescale
+wrdata ir-vr.txt -i(V1)
+.endc
+.end

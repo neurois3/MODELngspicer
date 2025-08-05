@@ -1,0 +1,22 @@
+bpf1.spice
+
+.param
+.include model.txt
+
+V1  n01 0       dc 0 portnum 1 z0 50
+V2  n05 0       dc 0 portnum 2 z0 50
+C1  n01 n02     {Cval1}
+L2  n02 n03     {Lval2}
+C3  n03 0       {Cval3}
+L4  n03 0       {Lval4}
+L5  n03 n04     {Lval2}
+C6  n04 n05     {Cval1}
+
+.control
+sp lin 200 50Meg 150Meg
+
+set wr_singlescale
+wrdata bpf1.txt db(s_2_1) db(s_1_1)
+
+.endc
+.end

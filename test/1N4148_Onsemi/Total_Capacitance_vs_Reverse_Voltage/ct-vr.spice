@@ -1,0 +1,35 @@
+ct-vr.spice
+
+.model DIODE1 D (
+.include model.txt
++ )
+
+V1  n01 0   dc 0 ac 1
+R1  n01 n02 1
+D1  0   n02 DIODE1
+
+.control
+* Reverse voltage sweep settings
+let st = 0
+let sp = 15
+let step = 0.1
+
+let loop_index = 0
+let loop_count = (sp-st)/step
+let capacitance = vector(loop_count)
+let reverse_voltage = st+step*vector(loop_count)
+
+while loop_index lt loop_count
+    alter V1 dc reverse_voltage[loop_index]
+    ac lin 1 1Meg 1Meg
+
+    $ Calculate capacitance from admittance
+    let Y11 = v(n01,n02)/v(n02)
+    let capacitance[loop_index] = abs(imag(Y11)/(2*pi*frequency))/1e-12
+    let loop_index = loop_index + 1
+end
+
+setscale capacitance reverse_voltage
+wrdata ct-vr.txt capacitance
+.endc
+.end
