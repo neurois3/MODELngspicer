@@ -49,7 +49,7 @@ class MainWindow(QtWidgets.QMainWindow):
         act.triggered.connect(\
                 lambda: QtGui.QDesktopServices.openUrl(QtCore.QUrl(\
                 'file:///'+get_absolute_path(__file__,\
-                '../docs/ModelNgspicer_User_Guide_EN.pdf'))))
+                '../docs/ModelNgspicer_User_Guide.pdf'))))
         self.addAction(act)
 
         act = QtGui.QAction('&User Guide - Japanese', self)
