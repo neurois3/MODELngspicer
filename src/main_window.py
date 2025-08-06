@@ -41,7 +41,7 @@ class MainWindow(QtWidgets.QMainWindow):
         act.triggered.connect(self.saveEvent)
         self.addAction(act)
 
-        act = QtGui.QAction('&About', self)
+        act = QtGui.QAction('&About...', self)
         act.triggered.connect(self.aboutEvent)
         self.addAction(act)
 
@@ -71,7 +71,7 @@ class MainWindow(QtWidgets.QMainWindow):
         menu.addAction(self.m_map_action['&Save Parameters...'])
 
         menu = menuBar.addMenu('&Help')
-        menu.addAction(self.m_map_action['&About'])
+        menu.addAction(self.m_map_action['&About...'])
         menu.addAction(self.m_map_action['&User Guide - English'])
         menu.addAction(self.m_map_action['&User Guide - Japanese'])
 
@@ -123,12 +123,29 @@ class MainWindow(QtWidgets.QMainWindow):
     @Slot()
     def aboutEvent(self):
         QtWidgets.QMessageBox.about(self, 'About',\
-                """
-                <h1>ModelNgspicer</h1>
-                <p>Version 1.0.0 / developed by \u30DAE</p>
-                <p>An application that accelerates SPICE-based device modeling with
-                interactive parameter control and live simulation.</p>
-                                    """)
+    """
+    <h2>ModelNgspicer</h2>
+    <p><strong>Version:</strong> 1.0.0</p>
+    <p><strong>Developed by:</strong> ペE</p>
+    <p>
+        ModelNgspicer is a Python-based GUI application that streamlines<br>
+        SPICE device modeling and circuit design with interactive parameter<br>
+        control and real-time simulation.
+    </p>
+    <p><strong>License:</strong> GNU General Public License v3.0</p>
+    <p>
+        This program is free software: you can redistribute it and/or modify<br>
+        it under the terms of the GNU General Public License as published by<br>
+        the Free Software Foundation, either version 3 of the License, or<br>
+        (at your option) any later version.
+    </p>
+    <p>
+        See the LICENSE file included with this project for full details.
+    </p>
+    <p><strong>GitHub Repository:</strong><br>
+        <a href="https://github.com/neurois3/ModelNgspicer">https://github.com/neurois3/ModelNgspicer</a>
+    </p>
+    """)
 
     @override
     def closeEvent(self, event):
