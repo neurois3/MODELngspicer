@@ -8,17 +8,10 @@ V1  n01 0   dc 0
 D1  n01 0   DIODE1
 
 .control
-foreach temp_value -40 25 65
-    option temp=$temp_value
-    dc V1 0.3 1.4 0.01
-end
-
-* Forward current at each temperature
-let i1 = -dc1.i(V1)
-let i2 = -dc2.i(V1)
-let i3 = -dc3.i(V1)
+option TEMP=25
+dc V1 0.3 1.5 0.01
 
 set wr_singlescale
-wrdata if-vf.txt i1 i2 i3
+wrdata if-vf.txt -i(V1)
 .endc
 .end
