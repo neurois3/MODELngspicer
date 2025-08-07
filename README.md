@@ -22,31 +22,25 @@ To ensure proper functionality of **ModelNgspicer**, the following system config
 ## 🛠️ Installation (Windows)
 
 To set up **ModelNgspicer** on Windows, follow these steps using [Chocolatey](https://chocolatey.org/)
-### 1. 📦 Install Python
+
+1. Install Python and Ngspice
 
 ```powershell
 choco install python
-```
-
-### 2. 🔧 Install Ngspice
-
-```powershell
 choco install ngspice
 ```
 
-### 3. 📚 Install required Python packages
+2. Install required Python packages
 
 ```bash
 pip install PySide6 pyqtgraph numpy
 
 ```
 
-### 4. 🚀 Launch ModelNgspicer
+3. Launch ModelNgspicer
 
 Run the `run.vbs` script located in the project folder to start the application.
 
 ## 📄 License
 
 This project is licensed under the [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.en.html). You are free to use, modify, and distribute the software under the terms of this license.
-
-
