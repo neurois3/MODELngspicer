@@ -125,7 +125,7 @@ class MainWindow(QtWidgets.QMainWindow):
         QtWidgets.QMessageBox.about(self, 'About',\
     """
     <h2>ModelNgspicer</h2>
-    <p><strong>Version:</strong> 1.0.0</p>
+    <p><strong>Version:</strong> 1.0.1</p>
     <p><strong>Developed by:</strong> ペE</p>
     <p>
         ModelNgspicer is a Python-based GUI application that streamlines<br>
