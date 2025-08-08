@@ -12,7 +12,7 @@
 
 Below is a demonstration of modeling the forward and reverse I-V characteristics of a diode using ModelNgspicer.
 
-![ModelNgspicer Demo](https://cdn-ak.f.st-hatena.com/images/fotolife/n/neurois/20250808/20250808034038.gif)
+<img src="https://cdn-ak.f.st-hatena.com/images/fotolife/n/neurois/20250808/20250808034038.gif" alt="ModelNgspicer Demo" width="560" height="400">
 
 ## Documentation
 
