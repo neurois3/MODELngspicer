@@ -83,16 +83,16 @@ QCheckBox::indicator {
 	height          : 13px;
 }
 QCheckBox::indicator:unchecked {
-	background-image: url("img:checkbox_unchecked.png");
+	background-image: url("img:checkbox_unchecked_dark_theme.png");
 }
 QCheckBox::indicator:unchecked:hover {
-	background-image: url("img:checkbox_unchecked_hover.png");
+	background-image: url("img:checkbox_unchecked_hover_dark_theme.png");
 }
 QCheckBox::indicator:checked {
-	background-image: url("img:checkbox_checked.png");
+	background-image: url("img:checkbox_checked_dark_theme.png");
 }
 QCheckBox::indicator:checked:hover {
-	background-image: url("img:checkbox_checked_hover.png");
+	background-image: url("img:checkbox_checked_hover_dark_theme.png");
 }
 /* QComboBox */
 QComboBox {
@@ -107,7 +107,7 @@ QComboBox::drop-down {
 	width           : 13px;
 }
 QComboBox::down-arrow {
-    image           : url("img:combobox_down_arrow.png");
+    image           : url("img:combobox_down_arrow_dark_theme.png");
 }
 QComboBox:editable {
 	background-color: #0d0d0d;
@@ -145,10 +145,10 @@ QAbstractSpinBox::up-button:hover, QAbstractSpinBox::down-button:hover {
     background-color: #8197bf;
 }
 QAbstractSpinBox::up-arrow {
-	background-image: url("img:spinbox_up_arrow.png");
+	background-image: url("img:spinbox_up_arrow_dark_theme.png");
 }
 QAbstractSpinBox::down-arrow {
-	background-image: url("img:spinbox_down_arrow.png");
+	background-image: url("img:spinbox_down_arrow_dark_theme.png");
 }
 /* QRadioButton */
 QRadioButton {
@@ -159,10 +159,10 @@ QRadioButton::indicator {
 	height          : 13px;
 }
 QRadioButton::indicator:unchecked {
-	background-image: url("img:radiobutton_unchecked.png");
+	background-image: url("img:radiobutton_unchecked_dark_theme.png");
 }
 QRadioButton::indicator:checked {
-	background-image: url("img:radiobutton_checked.png");
+	background-image: url("img:radiobutton_checked_dark_theme.png");
 }
 /* QGroupBox */
 QGroupBox {
@@ -203,10 +203,10 @@ QScrollBar::add-line:horizontal {
     subcontrol-origin: margin;
 }
 QScrollBar::left-arrow:horizontal {
-    background-image: url("img:horizontal_scrollbar_left_arrow.png");
+    background-image: url("img:horizontal_scrollbar_left_arrow_dark_theme.png");
 }
 QScrollBar::right-arrow:horizontal {
-    background-image: url("img:horizontal_scrollbar_right_arrow.png");
+    background-image: url("img:horizontal_scrollbar_right_arrow_dark_theme.png");
 }
 QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
       background    : none;
@@ -239,10 +239,10 @@ QScrollBar::add-line:vertical {
     subcontrol-origin: margin;
 }
 QScrollBar::up-arrow:vertical {
-    background-image: url("img:vertical_scrollbar_up_arrow.png");
+    background-image: url("img:vertical_scrollbar_up_arrow_dark_theme.png");
 }
 QScrollBar::down-arrow:vertical {
-    background-image: url("img:vertical_scrollbar_down_arrow.png");
+    background-image: url("img:vertical_scrollbar_down_arrow_dark_theme.png");
 }
 QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
       background    : none;
@@ -317,23 +317,23 @@ QTreeView::item:selected {
     color           : #e8e8d3;
 }
 QTreeView::branch:has-siblings:!adjoins-item {
-    border-image	: url("img:treeview_vline.png");
+    border-image	: url("img:treeview_vline_dark_theme.png");
 }
 QTreeView::branch:has-siblings:adjoins-item {
-    border-image	: url("img:treeview_branch_more.png");
+    border-image	: url("img:treeview_branch_more_dark_theme.png");
 }
 QTreeView::branch:!has-children:!has-siblings:adjoins-item {
-    border-image	: url("img:treeview_branch_end.png");
+    border-image	: url("img:treeview_branch_end_dark_theme.png");
 }
 QTreeView::branch:has-children:!has-siblings:closed,
 QTreeView::branch:closed:has-children:has-siblings {
     border-image	: none;
-    image			: url("img:treeview_branch_closed.png");
+    image			: url("img:treeview_branch_closed_dark_theme.png");
 }
 QTreeView::branch:open:has-children:!has-siblings,
 QTreeView::branch:open:has-children:has-siblings  {
     border-image	: none;
-    image			: url("img:treeview_branch_open.png");
+    image			: url("img:treeview_branch_open_dark_theme.png");
 }
 /* QMenu */
 QMenu {
