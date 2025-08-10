@@ -3,8 +3,8 @@ from PySide6.QtCore import Signal, Slot, Qt
 from typing import override
 import sys, os
 
-from ui_theme import apply_theme
-from path_utils import *
+from ui_manager import UIManager
+from path_utils import get_absolute_path
 
 from parameter_items import ParameterItems
 from parameter_table import ParameterTable
@@ -22,7 +22,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.m_map_action = {}
         self.m_items = ParameterItems()
         self.m_table = ParameterTable(self.m_items)
-
         self.setupActions()
         self.setupMenuBar()
         self.setupCentralWidget()
@@ -30,7 +29,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.setWindowTitle('ModelNgspicer')
         self.resize(700, 500)
-        apply_theme(self)
+
+        ui_manager = UIManager()
+        ui_manager.apply_theme(self)
 
     def setupActions(self):
         act = QtGui.QAction('&Load Parameters...', self)

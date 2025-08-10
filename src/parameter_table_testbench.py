@@ -2,7 +2,7 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Signal, Slot, Qt
 import sys, os
 
-from ui_theme import apply_theme
+from ui_manager import UIManager
 from exponential_spin_box import ExponentialSpinBox
 from parameter_items import ParameterItems
 from parameter_table import ParameterTable
@@ -20,6 +20,7 @@ if __name__ == '__main__':
     ex = ParameterTable(items)
     ex.display()
 
-    apply_theme(ex)
+    ui_manager = UIManager()
+    ui_manager.apply_theme(ex)
     ex.show()
     sys.exit(app.exec())

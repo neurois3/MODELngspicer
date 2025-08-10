@@ -3,7 +3,7 @@ from PySide6.QtCore import Signal, Slot, Qt
 from typing import override
 import sys, os
 
-from ui_theme import apply_theme
+from ui_manager import UIManager
 
 class PopTab(QtWidgets.QTabWidget):
     """ PopTab extends QTabWidget to provide enhanced tab management functionality.
@@ -65,7 +65,9 @@ class PopTab(QtWidgets.QTabWidget):
         popoutWindow.setWindowTitle(text)
         popoutWindow.setCentralWidget(original)
         popoutWindow.setAttribute(Qt.WA_DeleteOnClose)
-        apply_theme(popoutWindow)
+
+        ui_manager = UIManager()
+        ui_manager.apply_theme(popoutWindow)
 
         self.m_popoutWindows[index] = popoutWindow
         

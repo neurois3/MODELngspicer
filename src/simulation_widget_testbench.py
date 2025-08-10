@@ -4,12 +4,14 @@ import sys, os
 
 from parameter_items import ParameterItems
 from simulation_widget import SimulationWidget
-from ui_theme import apply_theme
+from ui_manager import UIManager
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     items = ParameterItems()
     ex = SimulationWidget(items)
-    apply_theme(ex)
+
+    ui_manager = UIManager()
+    ui_manager.apply_theme(ex)
     ex.show()
     sys.exit(app.exec())
