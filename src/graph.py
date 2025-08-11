@@ -70,22 +70,39 @@ class Graph(pg.PlotWidget):
     def draw_smith(self):
         pen = pg.mkPen(color='#808080', width=1, style=Qt.SolidLine)
 
-        # Constant-Resistance Curves
-        for ReZ in [0.0, 0.2, 0.5, 1, 2, 5, 10]:
+        # Constant-resistance curves
+        for Re_Z in [0.0, 0.2, 0.5, 1, 2, 5, 10]:
             theta = np.linspace(0, 2*np.pi, 256)
-            center = ReZ/(ReZ+1)
-            radius = 1/(ReZ+1)
+            center = Re_Z/(Re_Z+1)
+            radius = 1/(Re_Z+1)
             self.plot(center+radius*np.cos(theta), radius*np.sin(theta), pen=pen)
     
-        # Constant-Reactance Curves
-        for ImZ in [0.2, 0.5, 1, 2, 5]:
-            Zc = 1j*ImZ
+        # Constant-reactance curves
+        for Im_Z in [0.2, 0.5, 1, 2, 5]:
+            Zc = 1j*Im_Z
             theta_start = np.mod(np.angle((1/Zc-1)/(Zc+1)), 2*np.pi)
             theta = np.linspace(theta_start, 1.5*np.pi, 256)
-            radius = 1/ImZ
+            radius = 1/Im_Z
             self.plot(1+radius*np.cos(theta),  radius+radius*np.sin(theta), pen=pen)
             self.plot(1+radius*np.cos(theta), -radius-radius*np.sin(theta), pen=pen)
 
 
     def draw_polar(self):
         pen = pg.mkPen(color='#808080', width=1, style=Qt.SolidLine)
+
+        r_max = 1.0
+        r_vector = r_max*np.array([0.0, 0.25, 0.5, 0.75, 1.0])
+        theta_vector = np.arange(0.0, 2*np.pi, np.pi/6)
+
+        # Constant-theta curves
+        for theta in theta_vector:
+            x = [0, r_max*np.cos(theta)]
+            y = [0, r_max*np.sin(theta)]
+            self.plot(x, y, pen=pen)
+
+        # Constant-radius curves
+        for r in r_vector:
+            theta = np.linspace(0, 2*np.pi, 361)
+            x = r*np.cos(theta)
+            y = r*np.sin(theta)
+            self.plot(x, y, pen=pen)
