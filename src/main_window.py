@@ -6,7 +6,7 @@ import sys, os
 from ui_manager import UIManager
 from path_utils import get_absolute_path
 
-from parameter_items import ParameterItems
+from parameter_dictionary import ParameterDictionary
 from parameter_table import ParameterTable
 from simulation_widget import SimulationWidget
 
@@ -15,14 +15,13 @@ class MainWindow(QtWidgets.QMainWindow):
     m_menu_bar : QtWidgets.QMenuBar
     m_dock_widgets : list
     m_central_dock_area : QtWidgets.QMainWindow
-
-    m_parameter_dictionary : ParameterItems
+    m_parameter_dictionary : ParameterDictionary
     m_parameter_table : ParameterTable
 
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.m_parameter_dictionary = ParameterItems()
+        self.m_parameter_dictionary = ParameterDictionary()
         self.m_parameter_table = ParameterTable(self.m_parameter_dictionary)
         self.setup_ui()
 
@@ -47,6 +46,7 @@ class MainWindow(QtWidgets.QMainWindow):
         for i in range(0, 10):
             dock_widget = QtWidgets.QDockWidget('Page {:d}'.format(i+1), self.m_central_dock_area)
             simulation_widget = SimulationWidget(self.m_parameter_dictionary)
+            self.m_parameter_table.valueChanged.connect(simulation_widget.update_)
 
             dock_widget.setWidget(simulation_widget)
             self.m_dock_widgets.append(dock_widget)
@@ -153,7 +153,7 @@ class MainWindow(QtWidgets.QMainWindow):
             if answer == QtWidgets.QMessageBox.No:
                 return
 
-        self.m_parameter_dictionary.load(filename)
+        self.m_parameter_dictionary.load_file(filename)
         self.m_parameter_table.display()
 
 
@@ -164,7 +164,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if not filename:
             return
 
-        self.m_parameter_dictionary.write(filename)
+        self.m_parameter_dictionary.write_file(filename)
 
 
     @Slot()

@@ -1,39 +1,21 @@
 import re
 
 # A class for managing SPICE model parameters.
-class ParameterItems:
-
-    m_map : dict # Dictionary to store parameter names and their corresponding values
+class ParameterDictionary(dict):
 
     def __init__(self):
-        # Initialize the dictionary to be empty
-        self.m_map = {}
+        super().__init__(self)
 
-    def count(self) -> int:
-        # Return the number of parameters stored in the dictionary
-        return len(self.m_map)
 
-    def name_list(self) -> list:
-        # Return a list of all parameter names
-        return list(self.m_map.keys())
-
-    def value(self, name) -> float:
-        # Get the value associated with a specific parameter name
-        return self.m_map[name]
-
-    def set_value(self, name, value):
-        # Set or update the value for a specific parameter name
-        self.m_map[name] = value
-
-    def write(self, filename):
-        # Write all parameters and their values to a file in SPICE format
+    def write_file(self, filename):
+        # Write all parameters to a file in SPICE format
         with open(filename, 'w') as f:
-            for key, value in self.m_map.items():
+            for key, value in self.items():
                 f.write('+ {:s}={:.3E}\n'.format(key, value))
 
-    def load(self, filename):
-        # Clear the existing dictionary and load parameters from a file
-        self.m_map.clear()
+    def load_file(self, filename):
+        # Clear the existing contents and load parameters from a file
+        self.clear()
 
         with open(filename, 'r') as f:
             # Regular expressions for parsing parameter lines in SPICE format
@@ -57,6 +39,6 @@ class ParameterItems:
 
                     # Convert and store the value, applying the prefix if necessary
                     if m3:
-                        self.m_map[m1] = float(m2)*SI_prefix[m3]
+                        self[m1] = float(m2)*SI_prefix[m3]
                     else:
-                        self.m_map[m1] = float(m2)
+                        self[m1] = float(m2)

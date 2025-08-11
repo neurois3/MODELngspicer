@@ -4,20 +4,20 @@ import sys, os
 
 from ui_manager import UIManager
 from exponential_spin_box import ExponentialSpinBox
-from parameter_items import ParameterItems
+from parameter_dictionary import ParameterDictionary
 from parameter_table import ParameterTable
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
 
-    # Create an instance of ParameterItems
-    items = ParameterItems()
-    items.set_value('a', 3.42E+03)
-    items.set_value('b', 9.87E-02)
-    items.set_value('c', 1.00E+00)
+    # Create an instance of ParameterDictionary
+    parameter_dictionary = ParameterDictionary()
+    parameter_dictionary['a'] = 1.11E+01
+    parameter_dictionary['b'] = 2.22E+02
+    parameter_dictionary['c'] = 3.33E+03
 
     # Create an instance of ParameterTable
-    ex = ParameterTable(items)
+    ex = ParameterTable(parameter_dictionary)
     ex.display()
 
     ui_manager = UIManager()

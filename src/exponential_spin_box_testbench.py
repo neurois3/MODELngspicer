@@ -3,12 +3,14 @@ from PySide6.QtCore import Signal, Slot, Qt
 from typing import override
 import sys, os
 
-from ui_theme import apply_theme
+from ui_manager import UIManager
 from exponential_spin_box import ExponentialSpinBox
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     ex  = ExponentialSpinBox()
-    apply_theme(ex)
+
+    ui_manager = UIManager()
+    ui_manager.apply_theme(ex)
     ex.show()
     sys.exit(app.exec())

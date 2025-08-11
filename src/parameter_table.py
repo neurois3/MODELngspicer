@@ -3,33 +3,21 @@ from PySide6.QtCore import Signal, Slot, Qt
 import sys, os
 
 from exponential_spin_box import ExponentialSpinBox
-from parameter_items import ParameterItems
+from parameter_dictionary import ParameterDictionary
 
 class ParameterTable(QtWidgets.QTableWidget):
-    """ A custom table widget for displaying and managing model parameters.
-
-    Attributes:
-        valueChanged (Signal): Signal emitted whenever parameter values are updated.
-        m_items (ParameterItems): Holds the model parameters to be displayed and modified.
-    """
 
     valueChanged = Signal()
-    m_items : ParameterItems
+    m_parameter_dictionary : ParameterDictionary
 
-    def __init__(self, items, parent=None):
-        """ Initializes the table with given parameters and sets up its layout.
 
-        Args:
-            items (ParameterItems): The model parameter items to be used.
-            parent (QWidget, optional): Parent widget. Defaults to None.
-        """
+    def __init__(self, parameter_dictionary, parent=None):
         super().__init__(parent)
-        self.m_items = items
-        self.setupView()
+        self.m_parameter_dictionary = parameter_dictionary
+        self.setup_layout()
 
-    def setupView(self):
-        """ Configures the layout and appearance of the table. """
 
+    def setup_layout(self):
         # Clear existing contents from the table
         self.clear()
         
@@ -42,39 +30,40 @@ class ParameterTable(QtWidgets.QTableWidget):
         self.setHorizontalHeaderLabels(['name', 'value'])
         self.setColumnCount(2)
 
+
     def display(self):
-        """ Updates the table with parameter names and values. """
+        self.setup_layout()
+        self.setRowCount(len(self.m_parameter_dictionary))
 
-        self.setupView()
-        self.setRowCount(self.m_items.count())
+        row = 0
+        for key, value in self.m_parameter_dictionary.items():
+            # Column 1: parameter name (read-only)
+            widget_item = QtWidgets.QTableWidgetItem(key)
+            widget_item.setFlags(widget_item.flags() & ~Qt.ItemIsEditable)
+            self.setItem(row, 0, widget_item)
 
-        names = self.m_items.name_list()
-        for i, name in enumerate(names):
-            # Column 1: Parameter name (read-only)
-            item = QtWidgets.QTableWidgetItem(name)
-            item.setFlags(item.flags() & ~Qt.ItemIsEditable)
-            self.setItem(i, 0, item)
+            # Column 2: parameter value (editable with ExponentialSpinBox)
+            spin_box = ExponentialSpinBox()
+            spin_box.setValue(value)
+            spin_box.valueChanged.connect(self.spin_box_value_changed)
+            self.setCellWidget(row, 1, spin_box)
 
-            # Column 2: Parameter value (editable with ExponentialSpinBox)
-            spinbox = ExponentialSpinBox()
-            spinbox.setValue(self.m_items.value(name))
-            spinbox.valueChanged.connect(self.valueChangedEvent)
-            self.setCellWidget(i, 1, spinbox)
+            # Increment the row index
+            row = row + 1
 
-        # Emit valueChanged signal after setting up the table
+        # Emit the valueChanged signal
         self.valueChanged.emit()
 
+
     @Slot()
-    def valueChangedEvent(self):
-        """ Slot that updates the parameter values based on user input """
+    def spin_box_value_changed(self):
+        for row in range(self.rowCount()):
+            # Retrieve parameter name and value
+            key = self.item(row, 0).text()
+            value = self.cellWidget(row, 1).value()
 
-        for i in range(self.rowCount()):
-            # Retrieve parameter name and updated value
-            name = self.item(i, 0).text()
-            value = self.cellWidget(i, 1).value()
+            # Update parameter dictionary with a new value
+            self.m_parameter_dictionary[key] = value
 
-            # Update the model parameters with the new value
-            self.m_items.set_value(name, value)
-
-        # Emit signal to notify that values have changed
+        # Emit the valueChanged signal
         self.valueChanged.emit()
