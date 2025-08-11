@@ -1,5 +1,6 @@
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Signal, Slot, Qt
+from typing import override
 import sys, os
 
 from graph import Graph
@@ -8,18 +9,20 @@ from parameter_dictionary import ParameterDictionary
 import ngspice_con
 
 
+
+""" A custom QLineEdit that emits a signal upon double-clicking. """
+class LineEdit(QtWidgets.QLineEdit):
+    
+    doubleClicked = Signal() # Signal emitted when double-clicked
+
+    @override
+    def mouseDoubleClickEvent(self, event):
+        self.doubleClicked.emit()
+
+
+
+""" A main widget that manages simulation, plotting, UI updates. """
 class SimulationPlotter(QtWidgets.QMainWindow):
-
-
-    m_parameter_dictionary : ParameterDictionary
-
-    m_script_filename : str # Path to a simulation script file
-    m_data_filename : str # Path to a data file
-    m_enabled_state : bool
-
-    # UI components
-    m_graph : Graph
-    m_enable_simulation_check_box : QtWidgets.QCheckBox
 
 
     def __init__(self, parameter_dictionary, parent=None):
@@ -27,8 +30,8 @@ class SimulationPlotter(QtWidgets.QMainWindow):
 
         self.m_parameter_dictionary = parameter_dictionary
 
-        self.m_script_filename = ''
-        self.m_data_filename = ''
+        self.m_script_filename = '' # Path to a simulation script file
+        self.m_data_filename = '' # Path to a data file
         self.m_enabled_state = True
 
         # Setup the central Graph widget
@@ -120,14 +123,16 @@ class SimulationPlotter(QtWidgets.QMainWindow):
         status_bar.addWidget(self.m_enable_simulation_check_box)
 
         # Status bar >"Script:"
-        self.m_script_line_edit = QtWidgets.QLineEdit()
+        self.m_script_line_edit = LineEdit()
         self.m_script_line_edit.setReadOnly(True)
+        self.m_script_line_edit.doubleClicked.connect(self.open_script_file_in_editor)
         status_bar.addPermanentWidget(QtWidgets.QLabel('Script:'))
         status_bar.addPermanentWidget(self.m_script_line_edit)
 
         # Status bar >"Data:"
-        self.m_data_line_edit = QtWidgets.QLineEdit()
+        self.m_data_line_edit = LineEdit()
         self.m_data_line_edit.setReadOnly(True)
+        self.m_data_line_edit.doubleClicked.connect(self.open_data_file_in_editor)
         status_bar.addPermanentWidget(QtWidgets.QLabel('Data:'))
         status_bar.addPermanentWidget(self.m_data_line_edit)
 
@@ -198,6 +203,12 @@ class SimulationPlotter(QtWidgets.QMainWindow):
     @Slot()
     def set_polar_coordinates(self):
         self.m_graph.coordinates = 'Polar'
+        rho_max, ok = QtWidgets.QInputDialog.getDouble(self,\
+                'Polar coordinates', '\u03C1_max:', 1.0, 0.0, 1000.0, 2,\
+                Qt.WindowFlags(), 0.1)
+        if ok:
+            self.m_graph.rho_max = rho_max
+
         self.update_()
 
 
@@ -211,6 +222,20 @@ class SimulationPlotter(QtWidgets.QMainWindow):
     def check_box_state_changed(self):
         self.m_enabled_state = self.m_enable_simulation_check_box.isChecked()
         self.update_()
+
+
+    @Slot()
+    def open_script_file_in_editor(self):
+        # Open the script file with a custom text editor
+        # To be implemented
+        print('double clicked')
+
+
+    @Slot()
+    def open_data_file_in_editor(self):
+        # Open the data file with a custom text editor
+        # To be implemented
+        print('double clicked')
 
 
     @Slot()

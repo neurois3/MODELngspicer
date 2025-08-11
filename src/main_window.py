@@ -1,6 +1,5 @@
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Signal, Slot, Qt
-from typing import override
 import sys, os
 import pyqtgraph as pg
 
@@ -13,14 +12,6 @@ from simulation_plotter import SimulationPlotter
 
 
 class MainWindow(QtWidgets.QMainWindow):
-
-
-    m_menu_bar : QtWidgets.QMenuBar
-    m_dock_widgets : list
-    m_central_dock_area : QtWidgets.QMainWindow
-
-    m_parameter_dictionary : ParameterDictionary
-    m_parameter_table : ParameterTable
 
 
     def __init__(self, parent=None):
@@ -121,10 +112,6 @@ class MainWindow(QtWidgets.QMainWindow):
         ui_manager = UIManager()
         ui_manager.theme = 'Light'
         ui_manager.apply_theme(self)
-        
-        # Set PyQtGraph background color
-        pg.setConfigOptions(antialias=False, background='w')
-
 
 
     @Slot()
@@ -136,20 +123,17 @@ class MainWindow(QtWidgets.QMainWindow):
         ui_manager.theme = 'Dark'
         ui_manager.apply_theme(self)
 
-        # Set PyQtGraph background color
-        pg.setConfigOptions(antialias=False, background='k')
-
 
     @Slot()
     def user_guide_english(self):
-        absolute_path = get_absolute_path(__file__, '../docs/ModelNgspicer_User_Guide.pdf')
+        absolute_path = get_absolute_path(__file__, '../docs/MODELngspicer_User_Guide.pdf')
         url = QtCore.QUrl('file:///' + absolute_path)
         QtGui.QDesktopServices.openUrl(url)
 
 
     @Slot()
     def user_guide_japanese(self):
-        absolute_path = get_absolute_path(__file__, '../docs/ModelNgspicer_User_Guide_JP.pdf')
+        absolute_path = get_absolute_path(__file__, '../docs/MODELngspicer_User_Guide_JP.pdf')
         url = QtCore.QUrl('file:///' + absolute_path)
         QtGui.QDesktopServices.openUrl(url)
 
@@ -212,7 +196,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     See the LICENSE file included with this project for full details.
                 </p>
                 <p><strong>GitHub Repository:</strong><br>
-                    <a href="https://github.com/neurois3/ModelNgspicer">
-                    https://github.com/neurois3/ModelNgspicer</a>
+                    <a href="https://github.com/neurois3/MODELngspicer">
+                    https://github.com/neurois3/MODELngspicer</a>
                 </p>
                 """)

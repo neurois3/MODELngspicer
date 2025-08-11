@@ -6,17 +6,20 @@ from ui_manager import UIManager
 
 # PyQtGraph
 import pyqtgraph as pg
+pg.setConfigOptions(antialias=False)
+
+
 
 class Graph(pg.PlotWidget):
 
 
-    log_X = False
-    log_Y = False
-    coordinates = 'Cartesian' # or 'Polar' or 'Smith chart'
-
-
     def __init__(self, parent=None):
         super().__init__(parent)
+
+        self.log_X = False
+        self.log_Y = False
+        self.coordinates = 'Cartesian' # or 'Polar' or 'Smith chart'
+        self.rho_max = 1.0 # Maximum radius for 'Polar' plot
 
 
     def initialize(self):
@@ -75,6 +78,7 @@ class Graph(pg.PlotWidget):
             theta = np.linspace(0, 2*np.pi, 256)
             center = Re_Z/(Re_Z+1)
             radius = 1/(Re_Z+1)
+
             self.plot(center+radius*np.cos(theta), radius*np.sin(theta), pen=pen)
     
         # Constant-reactance curves
@@ -83,6 +87,7 @@ class Graph(pg.PlotWidget):
             theta_start = np.mod(np.angle((1/Zc-1)/(Zc+1)), 2*np.pi)
             theta = np.linspace(theta_start, 1.5*np.pi, 256)
             radius = 1/Im_Z
+
             self.plot(1+radius*np.cos(theta),  radius+radius*np.sin(theta), pen=pen)
             self.plot(1+radius*np.cos(theta), -radius-radius*np.sin(theta), pen=pen)
 
@@ -90,19 +95,13 @@ class Graph(pg.PlotWidget):
     def draw_polar(self):
         pen = pg.mkPen(color='#808080', width=1, style=Qt.SolidLine)
 
-        r_max = 1.0
-        r_vector = r_max*np.array([0.0, 0.25, 0.5, 0.75, 1.0])
-        theta_vector = np.arange(0.0, 2*np.pi, np.pi/6)
-
         # Constant-theta curves
+        theta_vector = np.arange(0.0, 2*np.pi, np.pi/6)
         for theta in theta_vector:
-            x = [0, r_max*np.cos(theta)]
-            y = [0, r_max*np.sin(theta)]
-            self.plot(x, y, pen=pen)
+            self.plot([0, self.rho_max*np.cos(theta)], [0, self.rho_max*np.sin(theta)], pen=pen)
 
         # Constant-radius curves
-        for r in r_vector:
-            theta = np.linspace(0, 2*np.pi, 361)
-            x = r*np.cos(theta)
-            y = r*np.sin(theta)
-            self.plot(x, y, pen=pen)
+        rho_vector = self.rho_max*np.array([0.0, 0.25, 0.5, 0.75, 1.0])
+        theta = np.linspace(0, 2*np.pi, 361)
+        for rho in rho_vector:
+            self.plot(rho*np.cos(theta), rho*np.sin(theta), pen=pen)

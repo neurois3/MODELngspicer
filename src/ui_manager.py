@@ -8,25 +8,25 @@ class UIManager(QtCore.QObject):
     themeChanged = QtCore.Signal(str) # Signal emitted when theme changes
 
 
-    __inst = None
+    _inst = None
 
     def __new__(cls):
-        if cls.__inst is None:
-            cls.__inst = super(UIManager, cls).__new__(cls)
-            cls.__inst.__initialized = False
+        if cls._inst is None:
+            cls._inst = super(UIManager, cls).__new__(cls)
+            cls._inst._initialized = False
 
-        return cls.__inst
+        return cls._inst
 
 
     def __init__(self):
-        if self.__initialized:
+        if self._initialized:
             return
 
         super().__init__() # Initialize QObject
 
-        self.__theme = None
+        self._theme = None
         self.theme = 'Light' # Use setter to initialize
-        self.__initialized = True
+        self._initialized = True
 
         # Set up a search path for image resources
         search_path = get_absolute_path(__file__, 'resources/images')
@@ -35,7 +35,7 @@ class UIManager(QtCore.QObject):
     
     @property
     def theme(self):
-        return self.__theme
+        return self._theme
 
 
     @theme.setter
@@ -43,8 +43,8 @@ class UIManager(QtCore.QObject):
         if value not in ['Light', 'Dark']:
             raise ValueError(f'Unsupported theme: {value}')
 
-        if value != self.__theme:
-            self.__theme = value
+        if value != self._theme:
+            self._theme = value
             self.themeChanged.emit(value) # Emit signal when theme changes
 
 

@@ -1,30 +1,24 @@
-import sys, os
+import os
 import subprocess
+import shutil
 
-def run(scriptname):
-    """ Executes the Ngspice simulation script using the 'ngspice_con' command.
+def run(script_filename):
+    """ Executes the ngspice simulation script using 'ngspice_con' command. """
+    if shutil.which('ngspice_con') is None:
+        print("Error: 'ngspice_con' command not found. Please check your system PATH.")
+        return False
 
-    This function locates the simulation script's directory, runs Ngspice in batch mode, 
-    and captures both standard output and error streams for debugging purposes.
-
-    Args:
-        scriptname (str): Path to the Ngspice simulation script.
-    """
+    working_dir = os.path.dirname(os.path.abspath(script_filename))
     try:
-        # Determine the working directory of the script
-        workingdir = os.path.dirname(os.path.abspath(scriptname))
-
-        # Run the 'ngspice_con' command in batch mode
-        subprocess.run(['ngspice_con', '-b', os.path.basename(scriptname)],\
-                cwd=workingdir,\
-                stdout=subprocess.PIPE,\
-                stderr=subprocess.PIPE,\
-                text=True,\
+        # Run 'ngspice_con' command in batch mode
+        subprocess.run(['ngspice_con', '-b', os.path.basename(script_filename)],\
+                cwd=working_dir,\
+                stdout=subprocess.DEVNULL,\
+                stderr=subprocess.DEVNULL,\
                 check=True) # Raises CalledProcessError if returncode != 0
-
-    except FileNotFoundError:
-        print('Error: \'ngspice_con\' command not found. Please check your system PATH.')
+        return True
 
     except subprocess.CalledProcessError as e:
-        print('Error: ngspice_con failed to execute properly.')
-        print('stderr:', e.stderr)
+        print("Error: ngspice_con failed to execute properly.")
+        print("Return code:", e.returncode)
+        return False
