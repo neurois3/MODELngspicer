@@ -1,94 +1,75 @@
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Signal, Slot, Qt
-from typing import override
 import numpy as np
+
+from ui_manager import UIManager
 
 # PyQtGraph
 import pyqtgraph as pg
-pg.setConfigOptions(antialias=False, background='k')
 
 class Graph(pg.PlotWidget):
-    """ Graph is a custom plot widget for displaying various types of plots using PyQtGraph.
 
-    Features:
-    - Supports different plot types: Linear, Log-Log, Semi-Log X/Y, and Smith Chart.
-    - Plots data from files with customizable visual styles.
-    - Draws Smith chart.
-    """
+
+    log_X = False
+    log_Y = False
+    coordinates = 'Cartesian' # or 'Polar' or 'Smith chart'
+
 
     def __init__(self, parent=None):
-        """ Initialize the Graph widget.
-
-        Args:
-            parent (QWidget, optional): Parent widget.
-        """
         super().__init__(parent)
 
-    def initialize(self, plotType='Linear Plot'):
-        """ Configure the plot based on the specified plot type.
 
-        Supported plot types include:
-        - Linear Plot: Standard linear scaling.
-        - Log-Log: Logarithmic scaling for both axes.
-        - Semi-Log X: Logarithmic scaling for the X-axis.
-        - Semi-Log Y: Logarithmic scaling for the Y-axis.
-        - Smith Chart: Plots Smith chart curves.
+    def initialize(self):
+        ui_manager = UIManager()
+        theme = ui_manager.theme
 
-        Args:
-            plotType (str): The type of plot to initialize.
-        """
-        setting_values = {\
-                'Linear Plot'   : (False, False, False),\
-                'Log-Log'       : (True , True , False),\
-                'Semi-Log X'    : (True , False, False),\
-                'Semi-Log Y'    : (False, True , False),\
-                'Smith Chart'   : (False, False, True ),\
-                }
+        # Set background color
+        background_color = 'w' if theme == 'Light' else 'k'
+        self.setBackground(background_color)
+        
+        # Clear existing plots, and set log scales and aspect ratio
+        self.clear()
+        aspect_lock = self.coordinates in ['Polar', 'Smith chart']
+        self.setAspectLocked(aspect_lock)
+        self.setLogMode(x=self.log_X, y=self.log_Y)
+        self.showGrid(x=True, y=True, alpha=0.3)
 
-        if plotType in setting_values:
-            logX, logY, aspect = setting_values[plotType]
-            self.clear() 
-            self.setAspectLocked(aspect)
-            self.setLogMode(x=logX, y=logY)
-            self.showGrid(x=True, y=True, alpha=0.3)
-            if plotType == 'Smith Chart':
-                self.draw_smith()
+        # Draw smith chart
+        if self.coordinates == 'Smith chart':
+            self.draw_smith()
 
-    def plot_file(self, filename, pen=None, symbol='o', symbolSize=2, symbolPen='w', symbolBrush='w'):
-        """ Plot data from the specified file.
+        # Draw polar grid
+        elif self.coordinates == 'Polar':
+            self.draw_polar()
 
-        The data file is expected to be in a format where:
-        - Column 0 represents the X-axis values.
-        - Subsequent columns represent Y-axis values for different data series.
 
-        Args:
-            filename (str): Path to the data file.
-            pen (QPen, optional): Pen for line styling.
-            symbol (str, optional): Symbol used for data points.
-            symbolSize (int, optional): Size of the symbols.
-            symbolPen (str, optional): Pen color for symbols.
-            symbolBrush (str, optional): Brush color for symbols.
-        """
+    def plot_file(self, filename, pen=None, symbol='o', symbol_size=2,\
+            symbol_pen='w', symbol_brush='w'):
         try:
+            # Load a text file
             data = np.loadtxt(filename)
-        except Exception:
+
+        except Exception as e:
+            print(str(e))
             return
 
-        if data.ndim == 2 and data.shape[1] > 1:
-            for i in range(1, data.shape[1]):
-                x = data[:, 0]
-                y = data[:, i]
-                self.plot(x, y,\
-                        pen=pen,\
-                        symbol=symbol,\
-                        symbolSize=symbolSize,\
-                        symbolPen=symbolPen,\
-                        symbolBrush=symbolBrush)
+        if data.ndim != 2 or data.shape[1] < 2:
+            # Returns if the data is not two-dimensional or does not have
+            # more than two columns
+            return
+
+        for column in range(1, data.shape[1]):
+            x = data[:, 0]
+            y = data[:, column]
+            self.plot(x, y, pen=pen, symbol=symbol,\
+                    symbolSize=symbol_size,\
+                    symbolPen=symbol_pen,\
+                    symbolBrush=symbol_brush)
+
 
     def draw_smith(self):
-        """ Draw Smith chart curves. """
-
         pen = pg.mkPen(color='#808080', width=1, style=Qt.SolidLine)
+
         # Constant-Resistance Curves
         for ReZ in [0.0, 0.2, 0.5, 1, 2, 5, 10]:
             theta = np.linspace(0, 2*np.pi, 256)
@@ -104,3 +85,7 @@ class Graph(pg.PlotWidget):
             radius = 1/ImZ
             self.plot(1+radius*np.cos(theta),  radius+radius*np.sin(theta), pen=pen)
             self.plot(1+radius*np.cos(theta), -radius-radius*np.sin(theta), pen=pen)
+
+
+    def draw_polar(self):
+        pen = pg.mkPen(color='#808080', width=1, style=Qt.SolidLine)

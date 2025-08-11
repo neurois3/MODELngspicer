@@ -2,19 +2,23 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Signal, Slot, Qt
 from typing import override
 import sys, os
+import pyqtgraph as pg
 
 from ui_manager import UIManager
 from path_utils import get_absolute_path
 
 from parameter_dictionary import ParameterDictionary
 from parameter_table import ParameterTable
-from simulation_widget import SimulationWidget
+from simulation_plotter import SimulationPlotter
+
 
 class MainWindow(QtWidgets.QMainWindow):
+
 
     m_menu_bar : QtWidgets.QMenuBar
     m_dock_widgets : list
     m_central_dock_area : QtWidgets.QMainWindow
+
     m_parameter_dictionary : ParameterDictionary
     m_parameter_table : ParameterTable
 
@@ -28,14 +32,14 @@ class MainWindow(QtWidgets.QMainWindow):
         ui_manager = UIManager()
         ui_manager.apply_theme(self)
 
-        self.setWindowTitle('ModelNgspicer')
+        self.setWindowTitle('MODELngspicer')
         self.resize(700, 350)
 
 
     def setup_ui(self):
         self.m_menu_bar = self.menuBar()
         file_menu = self.m_menu_bar.addMenu('&File')
-        dock_menu = self.m_menu_bar.addMenu('&Dock')
+        view_menu = self.m_menu_bar.addMenu('&View')
         help_menu = self.m_menu_bar.addMenu('&Help')
         options_menu = self.m_menu_bar.addMenu('&Options')
 
@@ -44,19 +48,30 @@ class MainWindow(QtWidgets.QMainWindow):
         self.m_dock_widgets = []
 
         for i in range(0, 10):
-            dock_widget = QtWidgets.QDockWidget('Page {:d}'.format(i+1), self.m_central_dock_area)
-            simulation_widget = SimulationWidget(self.m_parameter_dictionary)
-            self.m_parameter_table.valueChanged.connect(simulation_widget.update_)
+            window_title = 'Page {:d}'.format(i+1)
+            dock_widget = QtWidgets.QDockWidget(window_title, self.m_central_dock_area)
+            simulation_plotter = SimulationPlotter(self.m_parameter_dictionary)
+            dock_widget.setWidget(simulation_plotter)
 
-            dock_widget.setWidget(simulation_widget)
+            simulation_plotter.setWindowTitle(window_title)
+            simulation_plotter.windowTitleChanged.connect(dock_widget.setWindowTitle)
+            self.m_parameter_table.valueChanged.connect(simulation_plotter.update_)
+
             self.m_dock_widgets.append(dock_widget)
             self.m_central_dock_area.addDockWidget(Qt.TopDockWidgetArea, dock_widget)
+
             if i > 0:
+                # Tabify the docks to the first
                 self.m_central_dock_area.tabifyDockWidget(self.m_dock_widgets[0], dock_widget)
+            if i > 4:
+                # Show only "Page 1" to "Page 5", hide the others
                 dock_widget.hide()
 
+        # Raise the first dock widget
+        self.m_dock_widgets[0].raise_()
+
         for i in range(0, 10):
-            dock_menu.addAction(self.m_dock_widgets[i].toggleViewAction())
+            view_menu.addAction(self.m_dock_widgets[i].toggleViewAction())
 
         dock_widget = QtWidgets.QDockWidget('Parameters', self)
         dock_widget.setWidget(self.m_parameter_table)
@@ -106,6 +121,10 @@ class MainWindow(QtWidgets.QMainWindow):
         ui_manager = UIManager()
         ui_manager.theme = 'Light'
         ui_manager.apply_theme(self)
+        
+        # Set PyQtGraph background color
+        pg.setConfigOptions(antialias=False, background='w')
+
 
 
     @Slot()
@@ -116,6 +135,9 @@ class MainWindow(QtWidgets.QMainWindow):
         ui_manager = UIManager()
         ui_manager.theme = 'Dark'
         ui_manager.apply_theme(self)
+
+        # Set PyQtGraph background color
+        pg.setConfigOptions(antialias=False, background='k')
 
 
     @Slot()
@@ -171,11 +193,11 @@ class MainWindow(QtWidgets.QMainWindow):
     def about(self):
         QtWidgets.QMessageBox.about(self, 'About',\
                 """
-                <h2>ModelNgspicer</h2>
-                <p><strong>Version:</strong> 1.0.1</p>
+                <h2>MODELngspicer</h2>
+                <p><strong>Version:</strong> 2.0.0</p>
                 <p><strong>Developed by:</strong> ペE</p>
                 <p>
-                    ModelNgspicer is a Python-based GUI application that streamlines<br>
+                    <i>MODELngspicer</i> is a Python-based GUI application that streamlines<br>
                     SPICE device modeling and circuit design with interactive parameter<br>
                     control and real-time simulation.
                 </p>
@@ -190,6 +212,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     See the LICENSE file included with this project for full details.
                 </p>
                 <p><strong>GitHub Repository:</strong><br>
-                    <a href="https://github.com/neurois3/ModelNgspicer">https://github.com/neurois3/ModelNgspicer</a>
+                    <a href="https://github.com/neurois3/ModelNgspicer">
+                    https://github.com/neurois3/ModelNgspicer</a>
                 </p>
                 """)
