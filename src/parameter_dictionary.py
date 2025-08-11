@@ -13,6 +13,7 @@ class ParameterDictionary(dict):
             for key, value in self.items():
                 f.write('+ {:s}={:.3E}\n'.format(key, value))
 
+
     def load_file(self, filename):
         # Clear the existing contents and load parameters from a file
         self.clear()
