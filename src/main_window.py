@@ -9,147 +9,187 @@ from path_utils import get_absolute_path
 from parameter_items import ParameterItems
 from parameter_table import ParameterTable
 from simulation_widget import SimulationWidget
-from pop_tab import PopTab
 
 class MainWindow(QtWidgets.QMainWindow):
 
-    m_map_action : dict
-    m_items : ParameterItems
-    m_table : ParameterTable
+    m_menu_bar : QtWidgets.QMenuBar
+    m_dock_widgets : list
+    m_central_dock_area : QtWidgets.QMainWindow
+
+    m_parameter_dictionary : ParameterItems
+    m_parameter_table : ParameterTable
+
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.m_map_action = {}
-        self.m_items = ParameterItems()
-        self.m_table = ParameterTable(self.m_items)
-        self.setupActions()
-        self.setupMenuBar()
-        self.setupCentralWidget()
-        self.setupDockWidgets()
-
-        self.setWindowTitle('ModelNgspicer')
-        self.resize(700, 500)
+        self.m_parameter_dictionary = ParameterItems()
+        self.m_parameter_table = ParameterTable(self.m_parameter_dictionary)
+        self.setup_ui()
 
         ui_manager = UIManager()
         ui_manager.apply_theme(self)
 
-    def setupActions(self):
-        act = QtGui.QAction('&Load Parameters...', self)
-        act.triggered.connect(self.loadEvent)
-        self.addAction(act)
+        self.setWindowTitle('ModelNgspicer')
+        self.resize(700, 350)
 
-        act = QtGui.QAction('&Save Parameters...', self)
-        act.triggered.connect(self.saveEvent)
-        self.addAction(act)
 
-        act = QtGui.QAction('&About...', self)
-        act.triggered.connect(self.aboutEvent)
-        self.addAction(act)
+    def setup_ui(self):
+        self.m_menu_bar = self.menuBar()
+        file_menu = self.m_menu_bar.addMenu('&File')
+        dock_menu = self.m_menu_bar.addMenu('&Dock')
+        help_menu = self.m_menu_bar.addMenu('&Help')
+        options_menu = self.m_menu_bar.addMenu('&Options')
 
-        act = QtGui.QAction('&User Guide - English', self)
-        act.triggered.connect(\
-                lambda: QtGui.QDesktopServices.openUrl(QtCore.QUrl(\
-                'file:///'+get_absolute_path(__file__,\
-                '../docs/ModelNgspicer_User_Guide.pdf'))))
-        self.addAction(act)
+        self.m_central_dock_area = QtWidgets.QMainWindow()
+        self.setCentralWidget(self.m_central_dock_area)
+        self.m_dock_widgets = []
 
-        act = QtGui.QAction('&User Guide - Japanese', self)
-        act.triggered.connect(\
-                lambda: QtGui.QDesktopServices.openUrl(QtCore.QUrl(\
-                'file:///'+get_absolute_path(__file__,\
-                '../docs/ModelNgspicer_User_Guide_JP.pdf'))))
-        self.addAction(act)
+        for i in range(0, 10):
+            dock_widget = QtWidgets.QDockWidget('Page {:d}'.format(i+1), self.m_central_dock_area)
+            simulation_widget = SimulationWidget(self.m_parameter_dictionary)
 
-        for action in self.actions():
-            key = action.text()
-            self.m_map_action[key] = action
+            dock_widget.setWidget(simulation_widget)
+            self.m_dock_widgets.append(dock_widget)
+            self.m_central_dock_area.addDockWidget(Qt.TopDockWidgetArea, dock_widget)
+            if i > 0:
+                self.m_central_dock_area.tabifyDockWidget(self.m_dock_widgets[0], dock_widget)
+                dock_widget.hide()
 
-    def setupMenuBar(self):
-        menuBar = self.menuBar()
+        for i in range(0, 10):
+            dock_menu.addAction(self.m_dock_widgets[i].toggleViewAction())
 
-        menu = menuBar.addMenu('&File')
-        menu.addAction(self.m_map_action['&Load Parameters...'])
-        menu.addAction(self.m_map_action['&Save Parameters...'])
+        dock_widget = QtWidgets.QDockWidget('Parameters', self)
+        dock_widget.setWidget(self.m_parameter_table)
+        self.addDockWidget(Qt.RightDockWidgetArea, dock_widget)
 
-        menu = menuBar.addMenu('&Help')
-        menu.addAction(self.m_map_action['&About...'])
-        menu.addAction(self.m_map_action['&User Guide - English'])
-        menu.addAction(self.m_map_action['&User Guide - Japanese'])
+        action = QtGui.QAction('&Load params...', self)
+        action.triggered.connect(self.load_parameters)
+        file_menu.addAction(action)
 
-    def setupCentralWidget(self):
-        popTab = PopTab()
-        for index in range(1, 11):
-            mainWidget = SimulationWidget(self.m_items)
-            self.m_table.valueChanged.connect(mainWidget.updateEvent)
-            popTab.addTab(mainWidget, 'Tab {:d}'.format(index))
+        action = QtGui.QAction('&Save params...', self)
+        action.triggered.connect(self.save_parameters)
+        file_menu.addAction(action)
 
-        self.setCentralWidget(popTab)
+        action = QtGui.QAction('&User Guide - English', self)
+        action.triggered.connect(self.user_guide_english)
+        help_menu.addAction(action)
 
-    def setupDockWidgets(self):
-        dock = QtWidgets.QDockWidget('Model Parameters', self)
-        dock.setWidget(self.m_table)
-        self.addDockWidget(Qt.RightDockWidgetArea, dock)
+        action = QtGui.QAction('&User Guide - Japanese', self)
+        action.triggered.connect(self.user_guide_japanese)
+        help_menu.addAction(action)
+
+        action = QtGui.QAction('&About...', self)
+        action.triggered.connect(self.about)
+        help_menu.addAction(action)
+
+        theme_menu = options_menu.addMenu('Theme')
+        ui_manager = UIManager()
+
+        self.m_light_theme_action = QtGui.QAction('Light', self)
+        self.m_light_theme_action.setCheckable(True)
+        self.m_light_theme_action.setChecked(ui_manager.theme == 'Light')
+        self.m_light_theme_action.triggered.connect(self.light_theme)
+        theme_menu.addAction(self.m_light_theme_action)
+
+        self.m_dark_theme_action = QtGui.QAction('Dark', self)
+        self.m_dark_theme_action.setCheckable(True)
+        self.m_dark_theme_action.setChecked(ui_manager.theme == 'Dark')
+        self.m_dark_theme_action.triggered.connect(self.dark_theme)
+        theme_menu.addAction(self.m_dark_theme_action)
+
 
     @Slot()
-    def loadEvent(self):
+    def light_theme(self):
+        self.m_light_theme_action.setChecked(True)
+        self.m_dark_theme_action.setChecked(False)
+
+        ui_manager = UIManager()
+        ui_manager.theme = 'Light'
+        ui_manager.apply_theme(self)
+
+
+    @Slot()
+    def dark_theme(self):
+        self.m_light_theme_action.setChecked(False)
+        self.m_dark_theme_action.setChecked(True)
+
+        ui_manager = UIManager()
+        ui_manager.theme = 'Dark'
+        ui_manager.apply_theme(self)
+
+
+    @Slot()
+    def user_guide_english(self):
+        absolute_path = get_absolute_path(__file__, '../docs/ModelNgspicer_User_Guide.pdf')
+        url = QtCore.QUrl('file:///' + absolute_path)
+        QtGui.QDesktopServices.openUrl(url)
+
+
+    @Slot()
+    def user_guide_japanese(self):
+        absolute_path = get_absolute_path(__file__, '../docs/ModelNgspicer_User_Guide_JP.pdf')
+        url = QtCore.QUrl('file:///' + absolute_path)
+        QtGui.QDesktopServices.openUrl(url)
+
+
+    @Slot()
+    def load_parameters(self):
         filename, type_ = QtWidgets.QFileDialog.getOpenFileName(self,\
-                'Load Parameters...', '', 'Text Files (*.txt);;All Files (*)')
-        if filename:
-            basename = os.path.basename(filename)
-            if basename == 'model.txt':
-                msg_box = QtWidgets.QMessageBox()
-                msg_box.setIcon(QtWidgets.QMessageBox.Warning)
-                msg_box.setWindowTitle('Warning')
-                msg_box.setText('The selected file is \'model.txt\'.')
-                msg_box.setInformativeText(\
-                        'This application automatically overwrites \'model.txt\' '\
-                        'whenever model parameters are changed.\n'\
-                        'Do you still want to proceed?')
-                msg_box.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
-                msg_box.setDefaultButton(QtWidgets.QMessageBox.No)
-                result = msg_box.exec()
-                if result == QtWidgets.QMessageBox.No:
-                    return
+                'Load params...', '', 'Text Files (*.txt);;All Files (*)')
+        if not filename:
+            return
 
-            self.m_items.load(filename)
-            self.m_table.display()
-    
+        basename = os.path.basename(filename)
+        if basename.lower() == 'model.txt':
+            message_box = QtWidgets.QMessageBox()
+            message_box.setIcon(QtWidgets.QMessageBox.Warning)
+            message_box.setWindowTitle('Warning')
+            message_box.setText(\
+                    '"model.txt" will be overwriten whenever parameters are changed!\n'\
+                    'Do you still want to proceed?')
+            message_box.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+            message_box.setDefaultButton(QtWidgets.QMessageBox.No)
+            answer = message_box.exec()
+            if answer == QtWidgets.QMessageBox.No:
+                return
+
+        self.m_parameter_dictionary.load(filename)
+        self.m_parameter_table.display()
+
+
     @Slot()
-    def saveEvent(self):
+    def save_parameters(self):
         filename, type_ = QtWidgets.QFileDialog.getSaveFileName(self,\
-                'Save Parameters...', '', 'Text Files (*.txt);;All Files (*)')
-        if filename:
-            self.m_items.write(filename)
+                'Save params...', '', 'Text Files (*.txt);;All Files (*)')
+        if not filename:
+            return
+
+        self.m_parameter_dictionary.write(filename)
+
 
     @Slot()
-    def aboutEvent(self):
+    def about(self):
         QtWidgets.QMessageBox.about(self, 'About',\
-    """
-    <h2>ModelNgspicer</h2>
-    <p><strong>Version:</strong> 1.0.1</p>
-    <p><strong>Developed by:</strong> ペE</p>
-    <p>
-        ModelNgspicer is a Python-based GUI application that streamlines<br>
-        SPICE device modeling and circuit design with interactive parameter<br>
-        control and real-time simulation.
-    </p>
-    <p><strong>License:</strong> GNU General Public License v3.0</p>
-    <p>
-        This program is free software: you can redistribute it and/or modify<br>
-        it under the terms of the GNU General Public License as published by<br>
-        the Free Software Foundation, either version 3 of the License, or<br>
-        (at your option) any later version.
-    </p>
-    <p>
-        See the LICENSE file included with this project for full details.
-    </p>
-    <p><strong>GitHub Repository:</strong><br>
-        <a href="https://github.com/neurois3/ModelNgspicer">https://github.com/neurois3/ModelNgspicer</a>
-    </p>
-    """)
-
-    @override
-    def closeEvent(self, event):
-        popTab = self.centralWidget()
-        popTab.handleParentClose()
-        super().closeEvent(event)
+                """
+                <h2>ModelNgspicer</h2>
+                <p><strong>Version:</strong> 1.0.1</p>
+                <p><strong>Developed by:</strong> ペE</p>
+                <p>
+                    ModelNgspicer is a Python-based GUI application that streamlines<br>
+                    SPICE device modeling and circuit design with interactive parameter<br>
+                    control and real-time simulation.
+                </p>
+                <p><strong>License:</strong> GNU General Public License v3.0</p>
+                <p>
+                    This program is free software: you can redistribute it and/or modify<br>
+                    it under the terms of the GNU General Public License as published by<br>
+                    the Free Software Foundation, either version 3 of the License, or<br>
+                    (at your option) any later version.
+                </p>
+                <p>
+                    See the LICENSE file included with this project for full details.
+                </p>
+                <p><strong>GitHub Repository:</strong><br>
+                    <a href="https://github.com/neurois3/ModelNgspicer">https://github.com/neurois3/ModelNgspicer</a>
+                </p>
+                """)
