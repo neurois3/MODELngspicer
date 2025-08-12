@@ -1,3 +1,18 @@
+# Copyright (C) 2025 ペE(neuroi3)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
+
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Signal, Slot, Qt
 from typing import override
@@ -9,19 +24,17 @@ from parameter_dictionary import ParameterDictionary
 import ngspice_con
 
 
-
-""" A custom QLineEdit that emits a signal upon double-clicking. """
 class LineEdit(QtWidgets.QLineEdit):
-    
-    doubleClicked = Signal() # Signal emitted when double-clicked
+    """A custom QLineEdit that emits a signal upon double-clicking."""
+
+    # Signal emitted when double-clicked
+    doubleClicked = Signal()
 
     @override
     def mouseDoubleClickEvent(self, event):
         self.doubleClicked.emit()
 
 
-
-""" A main widget that manages simulation, plotting, UI updates. """
 class SimulationPlotter(QtWidgets.QMainWindow):
 
 
@@ -29,7 +42,6 @@ class SimulationPlotter(QtWidgets.QMainWindow):
         super().__init__(parent)
 
         self.m_parameter_dictionary = parameter_dictionary
-
         self.m_script_filename = '' # Path to a simulation script file
         self.m_data_filename = '' # Path to a data file
         self.m_enabled_state = True
