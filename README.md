@@ -1,25 +1,30 @@
-# ModelNgspicer
+# MODELngspicer
 
-**ModelNgspicer** is a GUI application built on top of ngspice, designed to enhance workflow efficiency in circuit design optimization and device modeling. The graphical interface is developed using Python's Qt library (PySide6), allowing users to adjust model parameters via mouse wheel or numeric input and instantly visualize changes through real-time plotting.
+**MODELngspicer** is a GUI application built on top of ngspice, designed to enhance workflow efficiency in circuit design optimization and device modeling. The graphical interface is developed using Python's Qt library (PySide6), allowing users to adjust model parameters via mouse wheel or numeric input and instantly visualize changes through real-time plotting.
 
 ## Features
 
-- Interactive GUI for real-time parameter tuning
-- Seemless interaction with Ngspice for immediate simulation feedback
-- Visualization of simulation results with support for overlaying external reference data
+- Interactive GUI for parameter tuning
+- Runs ngspice after each parameter update for quick simulation feedback
+- Visualizes simulation results and reference data
+- Light/dark themes
 
 ## Demo
 
-Below is a demonstration of modeling the forward and reverse I-V characteristics of a diode using ModelNgspicer.
+Band-pass filter design:
 
-<img src="https://cdn-ak.f.st-hatena.com/images/fotolife/n/neurois/20250808/20250808034038.gif" alt="ModelNgspicer Demo" width="560" height="400">
+<img src="https://github.com/neurois3/MODELngspicer/blob/main/docs/docsrc/images/demo_bpf_design.gif" alt="MODELngspicer Demo 1">
+
+Diode forward I-V curve fitting:
+
+<img src="https://github.com/neurois3/MODELngspicer/blob/main/docs/docsrc/images/demo_diode_modeling.gif" alt="MODELngspicer Demo 2">
 
 ## Documentation
 
 For detailed instructions on installation, usage, and file formats, please refer to the user guide:
 
-- [ModelNgspicer User Guide (English)](https://github.com/neurois3/ModelNgspicer/blob/main/docs/ModelNgspicer_User_Guide.pdf)  
-- [ModelNgspicer ユーザーマニュアル（日本語）](https://github.com/neurois3/ModelNgspicer/blob/main/docs/ModelNgspicer_User_Guide_JP.pdf)
+- [MODELngspicer User Guide (English)](https://github.com/neurois3/MODELngspicer/blob/main/docs/MODELngspicer_User_Guide.pdf)  
+- [MODELngspicer ユーザーマニュアル（日本語）](https://github.com/neurois3/MODELngspicer/blob/main/docs/MODELngspicer_User_Guide_JP.pdf)
 
 ## License
 
