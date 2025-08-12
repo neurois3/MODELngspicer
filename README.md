@@ -13,11 +13,11 @@
 
 Band-pass filter design:
 
-<img src="https://github.com/neurois3/MODELngspicer/blob/main/docs/docsrc/images/demo_bpf_design.gif" alt="MODELngspicer Demo 1">
+<img src="https://raw.githubusercontent.com/neurois3/MODELngspicer/refs/heads/develop/docs/docsrc/images/demo_bpf_design.gif" alt="MODELngspicer Demo 1">
 
 Diode forward I-V curve fitting:
 
-<img src="https://github.com/neurois3/MODELngspicer/blob/main/docs/docsrc/images/demo_diode_modeling.gif" alt="MODELngspicer Demo 2">
+<img src="https://raw.githubusercontent.com/neurois3/MODELngspicer/refs/heads/develop/docs/docsrc/images/demo_diode_modeling.gif" alt="MODELngspicer Demo 2">
 
 ## Documentation
 
