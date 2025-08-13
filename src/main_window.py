@@ -76,43 +76,83 @@ class MainWindow(QtWidgets.QMainWindow):
         # Raise the first dock widget
         self.m_dock_widgets[0].raise_()
 
-        for i in range(0, 10):
-            view_menu.addAction(self.m_dock_widgets[i].toggleViewAction())
-
+        # Parameter table
         dock_widget = QtWidgets.QDockWidget('Parameters', self)
         dock_widget.setWidget(self.m_parameter_table)
         self.addDockWidget(Qt.RightDockWidgetArea, dock_widget)
 
+        # "File">"Load params..."
         action = QtGui.QAction('&Load params...', self)
         action.triggered.connect(self.load_parameters)
         file_menu.addAction(action)
 
+        # "File">"Save params..."
         action = QtGui.QAction('&Save params...', self)
         action.triggered.connect(self.save_parameters)
         file_menu.addAction(action)
 
+        # "View">"Tiling"
+        tiling_menu = view_menu.addMenu('&Tiling')
+
+        # "View">"Tiling">"1 x 2"
+        action = QtGui.QAction('1 x 2', self)
+        action.triggered.connect(lambda: self.tiling(1, 2))
+        tiling_menu.addAction(action)
+
+        # "View">"Tiling">"1 x 3"
+        action = QtGui.QAction('1 x 3', self)
+        action.triggered.connect(lambda: self.tiling(1, 3))
+        tiling_menu.addAction(action)
+
+        # "View">"Tiling">"2 x 1"
+        action = QtGui.QAction('2 x 1', self)
+        action.triggered.connect(lambda: self.tiling(2, 1))
+        tiling_menu.addAction(action)
+
+        # "View">"Tiling">"2 x 2"
+        action = QtGui.QAction('2 x 2', self)
+        action.triggered.connect(lambda: self.tiling(2, 2))
+        tiling_menu.addAction(action)
+
+        # "View">"Tiling">"2 x 3"
+        action = QtGui.QAction('2 x 3', self)
+        action.triggered.connect(lambda: self.tiling(2, 3))
+        tiling_menu.addAction(action)
+
+        view_menu.addSeparator()
+
+        # "View">"Page n"
+        for i in range(0, 10):
+            view_menu.addAction(self.m_dock_widgets[i].toggleViewAction())
+
+        # "Help">"User Guide - English"
         action = QtGui.QAction('&User Guide - English', self)
         action.triggered.connect(self.user_guide_english)
         help_menu.addAction(action)
 
+        # "Help">"User Guide - Japanese"
         action = QtGui.QAction('&User Guide - Japanese', self)
         action.triggered.connect(self.user_guide_japanese)
         help_menu.addAction(action)
 
+        # "Help">"About"
         action = QtGui.QAction('&About...', self)
         action.triggered.connect(self.about)
         help_menu.addAction(action)
 
-        theme_menu = options_menu.addMenu('Theme')
+        # "Options">"Theme"
+        theme_menu = options_menu.addMenu('&Theme')
         ui_manager = UIManager()
 
-        self.m_light_theme_action = QtGui.QAction('Light', self)
+        # "Options">"Theme">"Light"
+        self.m_light_theme_action = QtGui.QAction('&Light', self)
         self.m_light_theme_action.setCheckable(True)
         self.m_light_theme_action.setChecked(ui_manager.theme == 'Light')
         self.m_light_theme_action.triggered.connect(self.light_theme)
         theme_menu.addAction(self.m_light_theme_action)
 
-        self.m_dark_theme_action = QtGui.QAction('Dark', self)
+        # "Options">"Theme">"Dark"
+        self.m_dark_theme_action = QtGui.QAction('&Dark', self)
         self.m_dark_theme_action.setCheckable(True)
         self.m_dark_theme_action.setChecked(ui_manager.theme == 'Dark')
         self.m_dark_theme_action.triggered.connect(self.dark_theme)
@@ -186,6 +226,45 @@ class MainWindow(QtWidgets.QMainWindow):
             return
 
         self.m_parameter_dictionary.write_file(filename)
+
+
+    @Slot()
+    def tiling(self, rows, columns):
+        dock_area = self.m_central_dock_area
+        docks = self.m_dock_widgets
+
+        if rows not in [1, 2]:
+            return
+        if columns < 1 or (rows * columns) > len(docks):
+            return
+
+        for d in docks:
+            d.hide()
+
+        # Dock widgets to be tiled on the top and bottom
+        docks_top = [docks[i] for i in range(columns)]
+        docks_bottom = [] if rows == 1 else [docks[i + columns] for i in range(columns)]
+
+        # Top:
+        for d in docks_top:
+            dock_area.removeDockWidget(d)
+            dock_area.addDockWidget(Qt.TopDockWidgetArea, d)
+            d.show()
+
+        # Bottom:
+        for d in docks_bottom:
+            dock_area.removeDockWidget(d)
+            dock_area.addDockWidget(Qt.BottomDockWidgetArea, d)
+            d.show()
+
+        # Resize dock widgets
+        equal_width = dock_area.width() // columns
+        equal_height = dock_area.height() // rows
+        
+        dock_area.resizeDocks(docks_top, [equal_width] * len(docks_top), Qt.Horizontal)
+        dock_area.resizeDocks(docks_top, [equal_height] * len(docks_top), Qt.Vertical)
+        dock_area.resizeDocks(docks_bottom, [equal_width] * len(docks_bottom), Qt.Horizontal)
+        dock_area.resizeDocks(docks_bottom, [equal_height] * len(docks_bottom), Qt.Vertical)
 
 
     @Slot()
