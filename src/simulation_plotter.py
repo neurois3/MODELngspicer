@@ -86,6 +86,11 @@ class SimulationPlotter(QtWidgets.QMainWindow):
         action.triggered.connect(self.reset)
         simulation_menu.addAction(action)
 
+        # "Graph">"Axis titles"
+        action = QtGui.QAction('Axis titles', self)
+        action.triggered.connect(self.set_axis_titles)
+        graph_menu.addAction(action)
+
         # "Graph">"Log scale"
         log_scale_menu = graph_menu.addMenu('Log scale')
 
@@ -228,6 +233,51 @@ class SimulationPlotter(QtWidgets.QMainWindow):
     def set_smith_coordinates(self):
         self.m_graph.coordinates = 'Smith chart'
         self.update_()
+
+
+    @Slot()
+    def set_axis_titles(self):
+        dialog = QtWidgets.QDialog(self)
+        dialog.setWindowTitle('Set Axis Titles')
+
+        # X Axis
+        x_title_edit = QtWidgets.QLineEdit()
+        x_unit_combo = QtWidgets.QComboBox()
+        x_unit_combo.setEditable(True)
+        x_unit_combo.addItems(['', 'V', 'A', 'Ω', 's', 'Hz'])
+
+        # Y axis
+        y_title_edit = QtWidgets.QLineEdit()
+        y_unit_combo = QtWidgets.QComboBox()
+        y_unit_combo.setEditable(True)
+        y_unit_combo.addItems(['', 'V', 'A', 'Ω', 's', 'Hz'])
+
+        # Layout
+        layout = QtWidgets.QGridLayout(dialog)
+        layout.addWidget(QtWidgets.QLabel('X Axis Title:'), 0, 0)
+        layout.addWidget(x_title_edit, 0, 1)
+        layout.addWidget(QtWidgets.QLabel('Unit:'), 0, 2)
+        layout.addWidget(x_unit_combo, 0, 3)
+        layout.addWidget(QtWidgets.QLabel('Y Axis Title:'), 1, 0)
+        layout.addWidget(y_title_edit, 1, 1)
+        layout.addWidget(QtWidgets.QLabel('Unit:'), 1, 2)
+        layout.addWidget(y_unit_combo, 1, 3)
+
+        # Buttons
+        button_box = QtWidgets.QDialogButtonBox(\
+                QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel,\
+                parent=dialog)
+        layout.addWidget(button_box, 2, 0, 1, 4)
+        button_box.accepted.connect(dialog.accept)
+        button_box.rejected.connect(dialog.reject)
+
+        if dialog.exec() == QtWidgets.QDialog.Accepted:
+            self.m_graph.setLabel(axis='bottom',\
+                    text=x_title_edit.text(), units=x_unit_combo.currentText())
+            self.m_graph.setLabel(axis='left',\
+                    text=y_title_edit.text(), units=y_unit_combo.currentText())
+
+            self.update_()
 
 
     @Slot()
