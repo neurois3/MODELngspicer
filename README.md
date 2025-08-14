@@ -1,4 +1,4 @@
-# MODELngspicer
+# [MODELngspicer](https://github.com/neurois3/MODELngspicer)
 
 **MODELngspicer** is a GUI application built on top of ngspice, designed to enhance workflow efficiency in circuit design optimization and device modeling. The graphical interface is developed using Python's Qt library (PySide6), allowing users to adjust model parameters via mouse wheel or numeric input and instantly visualize changes through real-time plotting.
 
@@ -25,6 +25,12 @@ For detailed instructions on installation, usage, and file formats, please refer
 
 - [MODELngspicer User Guide (English)](https://github.com/neurois3/MODELngspicer/blob/main/docs/MODELngspicer_User_Guide.pdf)  
 - [MODELngspicer ユーザーマニュアル（日本語）](https://github.com/neurois3/MODELngspicer/blob/main/docs/MODELngspicer_User_Guide_JP.pdf)
+
+## Download
+
+You can download the project as a `.zip` or `.tar.gz` archive from the latest release:
+
+- [MODELngspicer v2.1.0 Release](https://github.com/neurois3/MODELngspicer/releases/tag/v2.1.0)
 
 ## License
 
