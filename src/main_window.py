@@ -272,7 +272,7 @@ class MainWindow(QtWidgets.QMainWindow):
         QtWidgets.QMessageBox.about(self, 'About',\
                 """
                 <h2>MODELngspicer</h2>
-                <p><strong>Version:</strong> 2.0.0</p>
+                <p><strong>Version:</strong> 2.1.0</p>
                 <p><strong>Developed by:</strong> ペE</p>
                 <p>
                     <i>MODELngspicer</i> is a Python-based GUI application that streamlines<br>
