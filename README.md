@@ -30,7 +30,7 @@ For detailed instructions on installation, usage, and file formats, please refer
 
 You can download the project as a `.zip` or `.tar.gz` archive from the latest release:
 
-- [MODELngspicer v2.1.0 Release](https://github.com/neurois3/MODELngspicer/releases/tag/v2.1.0)
+- [MODELngspicer v2.2.0 Release](https://github.com/neurois3/MODELngspicer/releases/tag/v2.2.0)
 
 ## License
 
