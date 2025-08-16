@@ -22,6 +22,7 @@ from ui_manager import UIManager
 from parameter_dictionary import ParameterDictionary
 from parameter_table import ParameterTable
 from simulation_plotter import SimulationPlotter
+from code_editor_window import CodeEditorWindow
 
 from path_utils import get_absolute_path
 from app_version import app_version
@@ -158,6 +159,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.m_dark_theme_action.triggered.connect(self.dark_theme)
         theme_menu.addAction(self.m_dark_theme_action)
 
+        # "Options">"Code Editor"
+        action = QtGui.QAction('&Code Editor', self)
+        action.triggered.connect(self.open_editor)
+        options_menu.addAction(action)
+
 
     @Slot()
     def light_theme(self):
@@ -265,6 +271,12 @@ class MainWindow(QtWidgets.QMainWindow):
         dock_area.resizeDocks(docks_top, [equal_height] * len(docks_top), Qt.Vertical)
         dock_area.resizeDocks(docks_bottom, [equal_width] * len(docks_bottom), Qt.Horizontal)
         dock_area.resizeDocks(docks_bottom, [equal_height] * len(docks_bottom), Qt.Vertical)
+
+
+    @Slot()
+    def open_editor(self):
+        editor = CodeEditorWindow()
+        editor.show()
 
 
     @Slot()
