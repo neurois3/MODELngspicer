@@ -19,12 +19,13 @@ import sys, os
 import pyqtgraph as pg
 
 from ui_manager import UIManager
-from path_utils import get_absolute_path
-
 from parameter_dictionary import ParameterDictionary
 from parameter_table import ParameterTable
 from simulation_plotter import SimulationPlotter
+from code_editor_window import CodeEditorWindow
 
+from path_utils import get_absolute_path
+from app_version import app_version
 
 class MainWindow(QtWidgets.QMainWindow):
 
@@ -158,6 +159,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.m_dark_theme_action.triggered.connect(self.dark_theme)
         theme_menu.addAction(self.m_dark_theme_action)
 
+        # "Options">"Code Editor"
+        action = QtGui.QAction('&Code Editor', self)
+        action.triggered.connect(self.open_editor)
+        options_menu.addAction(action)
+
 
     @Slot()
     def light_theme(self):
@@ -268,11 +274,17 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     @Slot()
+    def open_editor(self):
+        editor = CodeEditorWindow()
+        editor.show()
+
+
+    @Slot()
     def about(self):
         QtWidgets.QMessageBox.about(self, 'About',\
-                """
+                f"""
                 <h2>MODELngspicer</h2>
-                <p><strong>Version:</strong> 2.1.0</p>
+                <p><strong>Version:</strong> {app_version}</p>
                 <p><strong>Developed by:</strong> ペE</p>
                 <p>
                     <i>MODELngspicer</i> is a Python-based GUI application that streamlines<br>

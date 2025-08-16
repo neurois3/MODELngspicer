@@ -23,6 +23,7 @@ from ui_manager import UIManager
 from parameter_dictionary import ParameterDictionary
 import ngspice_con
 
+from code_editor_window import CodeEditorWindow
 
 class LineEdit(QtWidgets.QLineEdit):
     """A custom QLineEdit that emits a signal upon double-clicking."""
@@ -288,16 +289,24 @@ class SimulationPlotter(QtWidgets.QMainWindow):
 
     @Slot()
     def open_script_file_in_editor(self):
+        if not self.m_script_filename:
+            return
+
         # Open the script file with a custom text editor
-        # To be implemented
-        print('double clicked')
+        editor = CodeEditorWindow()
+        editor.open_file(self.m_script_filename)
+        editor.show()
 
 
     @Slot()
     def open_data_file_in_editor(self):
+        if not self.m_data_filename:
+            return
+
         # Open the data file with a custom text editor
-        # To be implemented
-        print('double clicked')
+        editor = CodeEditorWindow()
+        editor.open_file(self.m_data_filename)
+        editor.show()
 
 
     @Slot()
