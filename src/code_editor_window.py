@@ -100,7 +100,7 @@ class CodeEditorWindow(QtWidgets.QMainWindow):
         
         # Update the window title and resize the window
         self.update_window_title()
-        self.resize(350, 350)
+        self.resize(600, 400)
 
 
     @property

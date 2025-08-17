@@ -17,8 +17,8 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Signal, Slot, Qt
 from typing import override
 
+from ui_manager import UIManager
 from syntax_highlighter import SyntaxHighlighter
-
 
 def get_monospace_font(size:int=9) -> QtGui.QFont:
     """
@@ -76,6 +76,11 @@ class CodeView(QtWidgets.QPlainTextEdit):
         # Set font
         self.setFont(get_monospace_font(9))
 
+        # Set stylesheet
+        self.update_theme()
+        ui_manager = UIManager()
+        ui_manager.themeChanged.connect(self.update_theme)
+
         # Configure text rendering options
         opt = QtGui.QTextOption()
 
@@ -97,17 +102,6 @@ class CodeView(QtWidgets.QPlainTextEdit):
         # Initialize layout and highlight
         self.update_line_number_area_width(0)
         self.highlight_current_line()
-
-        # Apply dark theme styling
-        self.setStyleSheet(\
-                f"""
-                QPlainTextEdit {{
-                    font-family     : {self.font().family()};
-                    font-size       : {self.font().pointSize()}pt;
-                    background-color: #151515;
-                    color           : #e8e8d3;
-                }}
-                """)
 
 
     @property
@@ -167,7 +161,7 @@ class CodeView(QtWidgets.QPlainTextEdit):
         """
         # Fill background
         painter = QtGui.QPainter(self.__line_number_area)
-        painter.fillRect(event.rect(), QtGui.QColor('#151515'))
+        painter.fillRect(event.rect(), self.line_number_background_color)
 
         block = self.firstVisibleBlock()
         block_number = block.blockNumber()
@@ -179,7 +173,7 @@ class CodeView(QtWidgets.QPlainTextEdit):
         while block.isValid() and top <= event.rect().bottom():
             if block.isVisible() and bottom >= event.rect().top():
                 number = str(block_number + 1)
-                painter.setPen(QtGui.QColor('#605958')) # Line number color
+                painter.setPen(self.line_number_color) # Line number color
                 painter.drawText(0, top, self.__line_number_area.width(),\
                         self.fontMetrics().height(), Qt.AlignRight, number)
 
@@ -189,6 +183,37 @@ class CodeView(QtWidgets.QPlainTextEdit):
             block_number += 1
 
         painter.end()
+
+
+    @Slot()
+    def update_theme(self):
+        ui_manager = UIManager()
+        if ui_manager.theme == 'Light':
+            self.current_line_background_color = QtGui.QColor('#bfbfbf')
+            self.line_number_background_color = QtGui.QColor('#eaeaea')
+            self.line_number_color = QtGui.QColor('#9fa6a7')
+            self.setStyleSheet(\
+                    f"""
+                    QPlainTextEdit {{
+                        font-family     : {self.font().family()};
+                        font-size       : {self.font().pointSize()}pt;
+                        background-color: #eaeaea;
+                        color           : #17172c;
+                    }}
+                    """)
+        else:
+            self.current_line_background_color = QtGui.QColor('#404040')
+            self.line_number_background_color = QtGui.QColor('#151515')
+            self.line_number_color = QtGui.QColor('#605958')
+            self.setStyleSheet(\
+                    f"""
+                    QPlainTextEdit {{
+                        font-family     : {self.font().family()};
+                        font-size       : {self.font().pointSize()}pt;
+                        background-color: #151515;
+                        color           : #e8e8d3;
+                    }}
+                    """)
 
 
     @Slot()
@@ -222,7 +247,7 @@ class CodeView(QtWidgets.QPlainTextEdit):
         extra_selections = []
         if not self.isReadOnly():
             selection = QtWidgets.QTextEdit.ExtraSelection()
-            selection.format.setBackground(QtGui.QColor('#404040')) # Highlight color
+            selection.format.setBackground(self.current_line_background_color) # Highlight color
             selection.format.setProperty(QtGui.QTextFormat.FullWidthSelection, True)
             selection.cursor = self.textCursor()
             selection.cursor.clearSelection()
