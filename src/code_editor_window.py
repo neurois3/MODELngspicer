@@ -224,3 +224,21 @@ class CodeEditorWindow(QtWidgets.QMainWindow):
 
         for action in self.language_actions:
             action.setChecked(action.text() == language)
+
+
+    @override
+    def closeEvent(self, event: QtGui.QCloseEvent):
+        doc = self.code_editor.document()
+        if doc.isModified():
+            reply = QtWidgets.QMessageBox.question(\
+                    self, "Unsaved Changes",\
+                    "The document has unsaved changes. Do you want to save before closing?",\
+                    QtWidgets.QMessageBox.Save | QtWidgets.QMessageBox.Discard | QtWidgets.QMessageBox.Cancel,\
+                    QtWidgets.QMessageBox.Save)
+            if reply == QtWidgets.QMessageBox.Save:
+                self.save()
+            elif reply == QtWidgets.QMessageBox.Cancel:
+                event.ignore()
+                return
+
+        event.accept()
