@@ -215,6 +215,9 @@ class CodeView(QtWidgets.QPlainTextEdit):
                     }}
                     """)
 
+        # Force current line highlight to refresh
+        self.highlight_current_line()
+
 
     @Slot()
     def update_line_number_area_width(self, block_count):
