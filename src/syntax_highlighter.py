@@ -448,3 +448,5 @@ class SyntaxHighlighter_SPICE(SyntaxHighlighter):
 
         # Keywords
         self.add_rule(r'(?<!\w)\.[a-zA-Z_]+', self.keyword_format)
+        self.add_rule(r'^\+', self.keyword_format)
+        self.add_rule(r'[()]', self.keyword_format)
