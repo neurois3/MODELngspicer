@@ -136,21 +136,27 @@ class SimulationPlotter(QtWidgets.QMainWindow):
 
         # Status bar >"Enable simulation"
         self.m_enable_simulation_check_box = QtWidgets.QCheckBox('Enable simulation')
+        self.m_enable_simulation_check_box.setToolTip("Disabling simulation helps reduce runtime when not needed")
         self.m_enable_simulation_check_box.setChecked(self.m_enabled_state)
         self.m_enable_simulation_check_box.checkStateChanged.connect(self.check_box_state_changed)
+
         status_bar.addWidget(self.m_enable_simulation_check_box)
 
         # Status bar >"Script:"
         self.m_script_line_edit = LineEdit()
+        self.m_script_line_edit.setToolTip("Double-click to open with an editor")
         self.m_script_line_edit.setReadOnly(True)
         self.m_script_line_edit.doubleClicked.connect(self.open_script_file_in_editor)
+
         status_bar.addPermanentWidget(QtWidgets.QLabel('Script:'))
         status_bar.addPermanentWidget(self.m_script_line_edit)
 
         # Status bar >"Data:"
         self.m_data_line_edit = LineEdit()
+        self.m_data_line_edit.setToolTip("Double-click to open with an editor")
         self.m_data_line_edit.setReadOnly(True)
         self.m_data_line_edit.doubleClicked.connect(self.open_data_file_in_editor)
+
         status_bar.addPermanentWidget(QtWidgets.QLabel('Data:'))
         status_bar.addPermanentWidget(self.m_data_line_edit)
 
@@ -289,23 +295,23 @@ class SimulationPlotter(QtWidgets.QMainWindow):
 
     @Slot()
     def open_script_file_in_editor(self):
-        if not self.m_script_filename:
-            return
-
-        # Open the script file with a custom text editor
         editor = CodeEditorWindow()
-        editor.open_file(self.m_script_filename)
+        if self.m_script_filename:
+            # Open the script file in the editor
+            editor.open_file(self.m_script_filename)
+        else:
+            pass # Open the editor as a new file
         editor.show()
 
 
     @Slot()
     def open_data_file_in_editor(self):
-        if not self.m_data_filename:
-            return
-
-        # Open the data file with a custom text editor
         editor = CodeEditorWindow()
-        editor.open_file(self.m_data_filename)
+        if self.m_data_filename:
+            # Open the data file in the editor
+            editor.open_file(self.m_data_filename)
+        else:
+            pass # Open the editor as a new file
         editor.show()
 
 
