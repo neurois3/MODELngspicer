@@ -438,11 +438,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
                 value = config[section_str].get('ScriptFile')
                 if value is not None:
-                    simulation_panel.script_file = value
+                    simulation_panel.script_file = resolve_path(value)
 
                 value = config[section_str].get('DataFile')
                 if value is not None:
-                    simulation_panel.data_file = value
+                    simulation_panel.data_file = resolve_path(value)
 
                 axis_title_X = config[section_str].get('AxisTitleX')
                 axis_title_Y = config[section_str].get('AxisTitleY')
