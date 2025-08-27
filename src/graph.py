@@ -30,10 +30,58 @@ class Graph(pg.PlotWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.log_X = False
-        self.log_Y = False
-        self.coordinates = 'Cartesian' # or 'Polar' or 'Smith chart'
-        self.rho_max = 1.0 # Maximum radius for 'Polar' plot
+        self.__log_X = False
+        self.__log_Y = False
+        self.__coordinates = 'Cartesian' # or 'Polar' or 'Smith Chart'
+        self.__rho_max = 1.0 # Maximum radius for 'Polar' plot
+
+
+    @property
+    def log_X(self):
+        return self.__log_X
+
+
+    @log_X.setter
+    def log_X(self, value):
+        if not isinstance(value, bool):
+            raise ValueError('The `log_X` property must be a boolean.')
+        self.__log_X = value
+
+
+    @property
+    def log_Y(self):
+        return self.__log_Y
+
+
+    @log_Y.setter
+    def log_Y(self, value):
+        if not isinstance(value, bool):
+            raise ValueError('The `log_Y` property must be a boolean.')
+        self.__log_Y = value
+
+
+    @property
+    def coordinates(self):
+        return self.__coordinates
+
+
+    @coordinates.setter
+    def coordinates(self, value):
+        if value not in ['Cartesian', 'Polar', 'Smith Chart']:
+            raise ValueError("The `coordinates` property must be one of ['Cartesian', 'Polar', 'Smith Chart'].")
+        self.__coordinates = value
+
+
+    @property
+    def rho_max(self):
+        return self.__rho_max
+
+
+    @rho_max.setter
+    def rho_max(self, value):
+        if not isinstance(value, (int, float)):
+            raise ValueError('The `rho_max` property must be a numeric value.')
+        self.__rho_max = value
 
 
     def initialize(self):
@@ -46,13 +94,13 @@ class Graph(pg.PlotWidget):
         
         # Clear existing plots, and set log scales and aspect ratio
         self.clear()
-        aspect_lock = self.coordinates in ['Polar', 'Smith chart']
+        aspect_lock = self.coordinates in ['Polar', 'Smith Chart']
         self.setAspectLocked(aspect_lock)
         self.setLogMode(x=self.log_X, y=self.log_Y)
         self.showGrid(x=True, y=True, alpha=0.3)
 
         # Draw smith chart
-        if self.coordinates == 'Smith chart':
+        if self.coordinates == 'Smith Chart':
             self.draw_smith()
 
         # Draw polar grid

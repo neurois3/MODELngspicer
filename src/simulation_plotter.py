@@ -39,46 +39,50 @@ class LineEdit(QtWidgets.QLineEdit):
 class SimulationPlotter(QtWidgets.QMainWindow):
 
 
-    def __init__(self, parameter_dictionary, parent=None):
+    def __init__(self, param_dict, default_title, parent=None):
         super().__init__(parent)
 
-        self.m_parameter_dictionary = parameter_dictionary
-        self.m_script_filename = '' # Path to a simulation script file
-        self.m_data_filename = '' # Path to a data file
-        self.m_enabled_state = True
+        self.__param_dict = param_dict
+        self.__default_title = default_title
+        self.__script_file = ''
+        self.__data_file = ''
+        self.__is_enabled = True
+
+        # Set the default window title
+        self.setWindowTitle(default_title)
 
         # Setup the central Graph widget
-        self.m_graph = Graph()
-        self.m_graph.initialize()
-        self.setCentralWidget(self.m_graph)
+        self.__graph = Graph()
+        self.__graph.initialize()
+        self.setCentralWidget(self.__graph)
 
-        self.ui_manager = UIManager()
-        self.ui_manager.themeChanged.connect(self.update_)
+        ui_manager = UIManager()
+        ui_manager.themeChanged.connect(self.update_)
 
         # Setup the menu bar
         menu_bar = self.menuBar()
         simulation_menu = menu_bar.addMenu('&Simulation')
         graph_menu = menu_bar.addMenu('&Graph')
 
-        # "Simulation">"Select ngspice script..."
-        action = QtGui.QAction('Select ngspice script...', self)
+        # "Simulation">"Select Ngspice Script..."
+        action = QtGui.QAction('Select Ngspice Script...', self)
         action.triggered.connect(self.browse_script_file)
         simulation_menu.addAction(action)
 
-        # "Simulation">"Select data file..."
-        action = QtGui.QAction('Select data file...', self)
+        # "Simulation">"Select Data..."
+        action = QtGui.QAction('Select Data...', self)
         action.triggered.connect(self.browse_data_file)
         simulation_menu.addAction(action)
 
         simulation_menu.addSeparator()
 
-        # "Simulation">"Enable/disable simulation"
-        action = QtGui.QAction('Enable/disable simulation', self)
-        action.triggered.connect(self.toggle_enabled_state)
+        # "Simulation">"Enable/Disable Simulation"
+        action = QtGui.QAction('Enable/Disable Simulation', self)
+        action.triggered.connect(self.toggle_enabled)
         simulation_menu.addAction(action)
 
-        # "Simulation">"Rename title"
-        action = QtGui.QAction('Rename title', self)
+        # "Simulation">"Rename Title"
+        action = QtGui.QAction('Rename Title', self)
         action.triggered.connect(self.rename_title)
         simulation_menu.addAction(action)
 
@@ -87,45 +91,45 @@ class SimulationPlotter(QtWidgets.QMainWindow):
         action.triggered.connect(self.reset)
         simulation_menu.addAction(action)
 
-        # "Graph">"Axis titles"
-        action = QtGui.QAction('Axis titles', self)
+        # "Graph">"Axis Titles"
+        action = QtGui.QAction('Axis Titles', self)
         action.triggered.connect(self.set_axis_titles)
         graph_menu.addAction(action)
 
-        # "Graph">"Log scale"
-        log_scale_menu = graph_menu.addMenu('Log scale')
+        # "Graph">"Log Scale"
+        log_scale_menu = graph_menu.addMenu('Log Scale')
 
-        # "Graph">"Log scale">"X"
-        self.m_log_X_action = QtGui.QAction('X', self)
-        self.m_log_X_action.triggered.connect(self.toggle_log_X)
-        self.m_log_X_action.setCheckable(True)
-        self.m_log_X_action.setChecked(self.m_graph.log_X)
-        log_scale_menu.addAction(self.m_log_X_action)
+        # "Graph">"Log Scale">"X"
+        self.__log_X_action = QtGui.QAction('X', self)
+        self.__log_X_action.triggered.connect(self.toggle_log_X)
+        self.__log_X_action.setCheckable(True)
+        self.__log_X_action.setChecked(self.__graph.log_X)
+        log_scale_menu.addAction(self.__log_X_action)
 
-        # "Graph">"Log scale">"Y"
-        self.m_log_Y_action = QtGui.QAction('Y', self)
-        self.m_log_Y_action.triggered.connect(self.toggle_log_Y)
-        self.m_log_Y_action.setCheckable(True)
-        self.m_log_Y_action.setChecked(self.m_graph.log_Y)
-        log_scale_menu.addAction(self.m_log_Y_action)
+        # "Graph">"Log Scale">"Y"
+        self.__log_Y_action = QtGui.QAction('Y', self)
+        self.__log_Y_action.triggered.connect(self.toggle_log_Y)
+        self.__log_Y_action.setCheckable(True)
+        self.__log_Y_action.setChecked(self.__graph.log_Y)
+        log_scale_menu.addAction(self.__log_Y_action)
 
         # "Graph">"Coordinates"
         coordinates_menu = graph_menu.addMenu('Coordinates')
-        self.m_coordinates_actions = {}
+        self.__coordinates_actions = {}
         
         # "Graph">"Coordinates">"Cartesian"
-        self.m_coordinates_actions['Cartesian'] = QtGui.QAction('Cartesian', self)
-        self.m_coordinates_actions['Cartesian'].triggered.connect(self.set_cartesian_coordinates)
+        self.__coordinates_actions['Cartesian'] = QtGui.QAction('Cartesian', self)
+        self.__coordinates_actions['Cartesian'].triggered.connect(self.set_cartesian_coordinates)
 
         # "Graph">"Coordinates">"Polar"
-        self.m_coordinates_actions['Polar'] = QtGui.QAction('Polar', self)
-        self.m_coordinates_actions['Polar'].triggered.connect(self.set_polar_coordinates)
+        self.__coordinates_actions['Polar'] = QtGui.QAction('Polar', self)
+        self.__coordinates_actions['Polar'].triggered.connect(self.set_polar_coordinates)
 
-        # "Graph">"Coordinates">"Smith chart"
-        self.m_coordinates_actions['Smith chart'] = QtGui.QAction('Smith chart', self)
-        self.m_coordinates_actions['Smith chart'].triggered.connect(self.set_smith_coordinates)
+        # "Graph">"Coordinates">"Smith Chart"
+        self.__coordinates_actions['Smith Chart'] = QtGui.QAction('Smith Chart', self)
+        self.__coordinates_actions['Smith Chart'].triggered.connect(self.set_smith_coordinates)
 
-        for key, action in self.m_coordinates_actions.items():
+        for key, action in self.__coordinates_actions.items():
             action.setCheckable(True)
             action.setChecked(key == 'Cartesian')
             coordinates_menu.addAction(action)
@@ -134,31 +138,99 @@ class SimulationPlotter(QtWidgets.QMainWindow):
         status_bar = self.statusBar()
         status_bar.setStyleSheet('QStatusBar::item { border: None; }')
 
-        # Status bar >"Enable simulation"
-        self.m_enable_simulation_check_box = QtWidgets.QCheckBox('Enable simulation')
-        self.m_enable_simulation_check_box.setToolTip("Disabling simulation helps reduce runtime when not needed")
-        self.m_enable_simulation_check_box.setChecked(self.m_enabled_state)
-        self.m_enable_simulation_check_box.checkStateChanged.connect(self.check_box_state_changed)
+        # Status bar >"Enable Simulation"
+        self.__enable_checkbox = QtWidgets.QCheckBox('Enable Simulation')
+        self.__enable_checkbox.setToolTip('Disabling simulation helps reduce runtime when not needed')
+        self.__enable_checkbox.setChecked(self.__is_enabled)
+        self.__enable_checkbox.checkStateChanged.connect(self.checkbox_state_changed)
 
-        status_bar.addWidget(self.m_enable_simulation_check_box)
+        status_bar.addWidget(self.__enable_checkbox)
 
         # Status bar >"Script:"
-        self.m_script_line_edit = LineEdit()
-        self.m_script_line_edit.setToolTip("Double-click to open with an editor")
-        self.m_script_line_edit.setReadOnly(True)
-        self.m_script_line_edit.doubleClicked.connect(self.open_script_file_in_editor)
+        self.__script_edit = LineEdit()
+        self.__script_edit.setToolTip('Double-click to open with an editor')
+        self.__script_edit.setReadOnly(True)
+        self.__script_edit.doubleClicked.connect(self.open_script_in_editor)
 
         status_bar.addPermanentWidget(QtWidgets.QLabel('Script:'))
-        status_bar.addPermanentWidget(self.m_script_line_edit)
+        status_bar.addPermanentWidget(self.__script_edit)
 
         # Status bar >"Data:"
-        self.m_data_line_edit = LineEdit()
-        self.m_data_line_edit.setToolTip("Double-click to open with an editor")
-        self.m_data_line_edit.setReadOnly(True)
-        self.m_data_line_edit.doubleClicked.connect(self.open_data_file_in_editor)
+        self.__data_edit = LineEdit()
+        self.__data_edit.setToolTip('Double-click to open with an editor')
+        self.__data_edit.setReadOnly(True)
+        self.__data_edit.doubleClicked.connect(self.open_data_in_editor)
 
         status_bar.addPermanentWidget(QtWidgets.QLabel('Data:'))
-        status_bar.addPermanentWidget(self.m_data_line_edit)
+        status_bar.addPermanentWidget(self.__data_edit)
+
+
+    @property
+    def param_dict(self):
+        return self.__param_dict
+
+
+    @param_dict.setter
+    def param_dict(self, value):
+        if not isinstance(value, ParameterDictionary):
+            raise ValueError(f'Invalid type for `param_dict`: {type(value).__name__}')
+        self.__param_dict = value
+
+
+    @property
+    def default_title(self):
+        return self.__default_title
+
+
+    @default_title.setter
+    def default_title(self, value):
+        if not isinstance(value, str):
+            raise ValueError('The `default_title` property must be a str.')
+        self.__default_title = value
+
+
+    @property
+    def script_file(self):
+        return self.__script_file
+
+
+    @script_file.setter
+    def script_file(self, value):
+        if not isinstance(value, str):
+            raise ValueError('The `script_file` property must be a str.')
+        self.__script_file = value
+        self.__script_edit.setText(value)
+
+
+    @property
+    def data_file(self):
+        return self.__data_file
+
+
+    @data_file.setter
+    def data_file(self, value):
+        if not isinstance(value, str):
+            raise ValueError('The `data_file` property must be a str.')
+        self.__data_file = value
+        self.__data_edit.setText(value)
+
+
+    @property
+    def is_enabled(self):
+        return self.__is_enabled
+
+
+    @is_enabled.setter
+    def is_enabled(self, value):
+        if not isinstance(value, bool):
+            raise ValueError('The `is_enabled` property must be a boolean.')
+        self.__is_enabled = value
+        self.__enable_checkbox.setChecked(value)
+
+
+    @property
+    def graph(self):
+        return self.__graph
 
 
     @Slot()
@@ -168,7 +240,7 @@ class SimulationPlotter(QtWidgets.QMainWindow):
         if not filename:
             return
 
-        self.m_script_filename = filename
+        self.script_file = filename
         self.update_()
 
 
@@ -179,20 +251,20 @@ class SimulationPlotter(QtWidgets.QMainWindow):
         if not filename:
             return
 
-        self.m_data_filename = filename
+        self.data_file = filename
         self.update_()
 
     
     @Slot()
-    def toggle_enabled_state(self):
-        self.m_enabled_state = not self.m_enabled_state
+    def toggle_enabled(self):
+        self.is_enabled = not self.is_enabled
         self.update_()
 
 
     @Slot()
     def rename_title(self):
         text, ok = QtWidgets.QInputDialog.getText(self,\
-                'Rename title', 'Title:', QtWidgets.QLineEdit.Normal, self.windowTitle())
+                'Rename Title', 'Title:', QtWidgets.QLineEdit.Normal, self.windowTitle())
 
         if ok and text:
             self.setWindowTitle(text)
@@ -200,45 +272,58 @@ class SimulationPlotter(QtWidgets.QMainWindow):
 
     @Slot()
     def reset(self):
-        self.m_script_filename = ''
-        self.m_data_filename = ''
-        self.m_enabled_state = True
+        self.script_file = ''
+        self.data_file = ''
+        self.is_enabled = True
+
+        # Reset the window title
+        self.setWindowTitle(self.default_title)
+
+        # Reset the graph
+        self.graph.coordinates = 'Cartesian'
+        self.graph.log_X = False
+        self.graph.log_Y = False
+
         self.update_()
+
+        self.graph.setLabel(text=None, units=None, axis='bottom')
+        self.graph.setLabel(text=None, units=None, axis='left')
+        self.graph.setRange(xRange=(0, 1), yRange=(0, 1), padding=0)
+        self.graph.enableAutoRange(x=True, y=True)
 
 
     @Slot()
     def toggle_log_X(self):
-        self.m_graph.log_X = not self.m_graph.log_X
+        self.graph.log_X = not self.graph.log_X
         self.update_()
 
 
     @Slot()
     def toggle_log_Y(self):
-        self.m_graph.log_Y = not self.m_graph.log_Y
+        self.graph.log_Y = not self.graph.log_Y
         self.update_()
 
 
     @Slot()
     def set_cartesian_coordinates(self):
-        self.m_graph.coordinates = 'Cartesian'
+        self.graph.coordinates = 'Cartesian'
         self.update_()
 
 
     @Slot()
     def set_polar_coordinates(self):
-        self.m_graph.coordinates = 'Polar'
+        self.graph.coordinates = 'Polar'
         rho_max, ok = QtWidgets.QInputDialog.getDouble(self,\
                 'Polar coordinates', '\u03C1_max:', 1.0, 0.0, 1000.0, 2,\
                 Qt.WindowFlags(), 0.1)
         if ok:
-            self.m_graph.rho_max = rho_max
-
+            self.graph.rho_max = rho_max
         self.update_()
 
 
     @Slot()
     def set_smith_coordinates(self):
-        self.m_graph.coordinates = 'Smith chart'
+        self.graph.coordinates = 'Smith Chart'
         self.update_()
 
 
@@ -279,37 +364,37 @@ class SimulationPlotter(QtWidgets.QMainWindow):
         button_box.rejected.connect(dialog.reject)
 
         if dialog.exec() == QtWidgets.QDialog.Accepted:
-            self.m_graph.setLabel(axis='bottom',\
+            self.graph.setLabel(axis='bottom',\
                     text=x_title_edit.text(), units=x_unit_combo.currentText())
-            self.m_graph.setLabel(axis='left',\
+            self.graph.setLabel(axis='left',\
                     text=y_title_edit.text(), units=y_unit_combo.currentText())
 
             self.update_()
 
 
     @Slot()
-    def check_box_state_changed(self):
-        self.m_enabled_state = self.m_enable_simulation_check_box.isChecked()
+    def checkbox_state_changed(self):
+        self.is_enabled = self.__enable_checkbox.isChecked()
         self.update_()
 
 
     @Slot()
-    def open_script_file_in_editor(self):
+    def open_script_in_editor(self):
         editor = CodeEditorWindow()
-        if self.m_script_filename:
+        if self.script_file:
             # Open the script file in the editor
-            editor.open_file(self.m_script_filename)
+            editor.open_file(self.script_file)
         else:
             pass # Open the editor as a new file
         editor.show()
 
 
     @Slot()
-    def open_data_file_in_editor(self):
+    def open_data_in_editor(self):
         editor = CodeEditorWindow()
-        if self.m_data_filename:
+        if self.data_file:
             # Open the data file in the editor
-            editor.open_file(self.m_data_filename)
+            editor.open_file(self.data_file)
         else:
             pass # Open the editor as a new file
         editor.show()
@@ -317,50 +402,44 @@ class SimulationPlotter(QtWidgets.QMainWindow):
 
     @Slot()
     def update_(self):
-        # Update texts in the line edits
-        self.m_script_line_edit.setText(self.m_script_filename)
-        self.m_data_line_edit.setText(self.m_data_filename)
-
-        # Change the state of "Enable simulation" check box
-        self.m_enable_simulation_check_box.setChecked(self.m_enabled_state)
-
         # Update check states of the menu actions
-        self.m_log_X_action.setChecked(self.m_graph.log_X)
-        self.m_log_Y_action.setChecked(self.m_graph.log_Y)
-        for key, action in self.m_coordinates_actions.items():
-            action.setChecked(key == self.m_graph.coordinates)
+        self.__log_X_action.setChecked(self.graph.log_X)
+        self.__log_Y_action.setChecked(self.graph.log_Y)
+        for key, action in self.__coordinates_actions.items():
+            action.setChecked(key == self.graph.coordinates)
 
-        if not self.m_enabled_state:
+        if not self.is_enabled:
             return
 
         # Initialize graph view
-        self.m_graph.initialize()
+        self.graph.initialize()
 
         try:
             # Run ngspice simulation and plot the result
-            if self.m_script_filename:
+            if self.script_file:
                 # Write parameters to "model.txt"
-                working_dir = os.path.dirname(os.path.abspath(self.m_script_filename))
-                output_filename = os.path.join(working_dir, 'model.txt')
-                self.m_parameter_dictionary.write_file(output_filename)
+                working_dir = os.path.dirname(os.path.abspath(self.script_file))
+                output_file = os.path.join(working_dir, 'model.txt')
+                self.param_dict.write_file(output_file)
 
                 # Run ngspice_con
-                ngspice_con.run(self.m_script_filename)
+                ngspice_con.run(self.script_file)
 
                 # Plot the simulation result
-                root, ext = os.path.splitext(self.m_script_filename)
-                result_filename = root + '.txt'
+                root, ext = os.path.splitext(self.script_file)
+                result_file = root + '.txt'
 
-                theme = self.ui_manager.theme
-                symbol_color = 'k' if theme == 'Light' else 'w'
+                ui_manager = UIManager()
+                symbol_color = 'k' if ui_manager.theme == 'Light' else 'w'
 
-                self.m_graph.plot_file(result_filename,\
+                self.graph.plot_file(\
+                        result_file,\
                         symbol_pen=symbol_color,\
                         symbol_brush=symbol_color)
 
             # Plot the reference data
-            if self.m_data_filename:
-                self.m_graph.plot_file(self.m_data_filename,\
+            if self.data_file:
+                self.graph.plot_file(self.data_file,\
                         symbol_pen='r',\
                         symbol_brush='r')
 

@@ -16,6 +16,8 @@
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Signal, Slot, Qt
 import sys, os
+import configparser
+import base64
 import pyqtgraph as pg
 
 from ui_manager import UIManager
@@ -32,8 +34,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.m_parameter_dictionary = ParameterDictionary()
-        self.m_parameter_table = ParameterTable(self.m_parameter_dictionary)
+        self.__param_dict = ParameterDictionary()
+        self.__param_table = ParameterTable(self.__param_dict)
         self.setup_ui()
 
         ui_manager = UIManager()
@@ -44,52 +46,66 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     def setup_ui(self):
-        self.m_menu_bar = self.menuBar()
-        file_menu = self.m_menu_bar.addMenu('&File')
-        view_menu = self.m_menu_bar.addMenu('&View')
-        help_menu = self.m_menu_bar.addMenu('&Help')
-        options_menu = self.m_menu_bar.addMenu('&Options')
+        self.__menu_bar = self.menuBar()
+        file_menu = self.__menu_bar.addMenu('&File')
+        view_menu = self.__menu_bar.addMenu('&View')
+        help_menu = self.__menu_bar.addMenu('&Help')
+        options_menu = self.__menu_bar.addMenu('&Options')
 
-        self.m_central_dock_area = QtWidgets.QMainWindow()
-        self.setCentralWidget(self.m_central_dock_area)
-        self.m_dock_widgets = []
+        # Central dock area
+        self.__dock_widgets = []
+        self.__central_dock_area = QtWidgets.QMainWindow()
+        self.setCentralWidget(self.__central_dock_area)
 
         for i in range(0, 10):
-            window_title = 'Page {:d}'.format(i+1)
-            dock_widget = QtWidgets.QDockWidget(window_title, self.m_central_dock_area)
-            simulation_plotter = SimulationPlotter(self.m_parameter_dictionary)
+            default_title = 'Page {:d}'.format(i+1)
+            dock_widget = QtWidgets.QDockWidget(default_title, self.__central_dock_area)
+            simulation_plotter = SimulationPlotter(self.__param_dict, default_title)
+
+            dock_widget.setObjectName(default_title)
             dock_widget.setWidget(simulation_plotter)
-
-            simulation_plotter.setWindowTitle(window_title)
             simulation_plotter.windowTitleChanged.connect(dock_widget.setWindowTitle)
-            self.m_parameter_table.valueChanged.connect(simulation_plotter.update_)
+            self.__param_table.valueChanged.connect(simulation_plotter.update_)
 
-            self.m_dock_widgets.append(dock_widget)
-            self.m_central_dock_area.addDockWidget(Qt.TopDockWidgetArea, dock_widget)
+            self.__dock_widgets.append(dock_widget)
+            self.__central_dock_area.addDockWidget(Qt.TopDockWidgetArea, dock_widget)
 
             if i > 0:
                 # Tabify the docks to the first
-                self.m_central_dock_area.tabifyDockWidget(self.m_dock_widgets[0], dock_widget)
+                self.__central_dock_area.tabifyDockWidget(self.__dock_widgets[0], dock_widget)
             if i > 4:
                 # Show only "Page 1" to "Page 5", hide the others
                 dock_widget.hide()
 
         # Raise the first dock widget
-        self.m_dock_widgets[0].raise_()
+        self.__dock_widgets[0].raise_()
 
         # Parameter table
         dock_widget = QtWidgets.QDockWidget('Parameters', self)
-        dock_widget.setWidget(self.m_parameter_table)
+        dock_widget.setObjectName('Parameters')
+        dock_widget.setWidget(self.__param_table)
         self.addDockWidget(Qt.RightDockWidgetArea, dock_widget)
 
-        # "File">"Load params..."
-        action = QtGui.QAction('&Load params...', self)
-        action.triggered.connect(self.load_parameters)
+        # "File">"Import Params..."
+        action = QtGui.QAction('&Import Params...', self)
+        action.triggered.connect(self.import_parameters)
         file_menu.addAction(action)
 
-        # "File">"Save params..."
-        action = QtGui.QAction('&Save params...', self)
-        action.triggered.connect(self.save_parameters)
+        # "File">"Export Params..."
+        action = QtGui.QAction('&Export Params...', self)
+        action.triggered.connect(self.export_parameters)
+        file_menu.addAction(action)
+
+        file_menu.addSeparator()
+
+        # "File">"Load..."
+        action = QtGui.QAction('&Load...', self)
+        action.triggered.connect(self.load)
+        file_menu.addAction(action)
+
+        # "File">"Save..."
+        action = QtGui.QAction('&Save...', self)
+        action.triggered.connect(self.save)
         file_menu.addAction(action)
 
         # "View">"Tiling"
@@ -124,7 +140,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # "View">"Page n"
         for i in range(0, 10):
-            view_menu.addAction(self.m_dock_widgets[i].toggleViewAction())
+            view_menu.addAction(self.__dock_widgets[i].toggleViewAction())
 
         # "Help">"User Guide - English"
         action = QtGui.QAction('&User Guide - English', self)
@@ -146,18 +162,18 @@ class MainWindow(QtWidgets.QMainWindow):
         ui_manager = UIManager()
 
         # "Options">"Theme">"Light"
-        self.m_light_theme_action = QtGui.QAction('&Light', self)
-        self.m_light_theme_action.setCheckable(True)
-        self.m_light_theme_action.setChecked(ui_manager.theme == 'Light')
-        self.m_light_theme_action.triggered.connect(self.light_theme)
-        theme_menu.addAction(self.m_light_theme_action)
+        self.__light_theme_action = QtGui.QAction('&Light', self)
+        self.__light_theme_action.setCheckable(True)
+        self.__light_theme_action.setChecked(ui_manager.theme == 'Light')
+        self.__light_theme_action.triggered.connect(self.light_theme)
+        theme_menu.addAction(self.__light_theme_action)
 
         # "Options">"Theme">"Dark"
-        self.m_dark_theme_action = QtGui.QAction('&Dark', self)
-        self.m_dark_theme_action.setCheckable(True)
-        self.m_dark_theme_action.setChecked(ui_manager.theme == 'Dark')
-        self.m_dark_theme_action.triggered.connect(self.dark_theme)
-        theme_menu.addAction(self.m_dark_theme_action)
+        self.__dark_theme_action = QtGui.QAction('&Dark', self)
+        self.__dark_theme_action.setCheckable(True)
+        self.__dark_theme_action.setChecked(ui_manager.theme == 'Dark')
+        self.__dark_theme_action.triggered.connect(self.dark_theme)
+        theme_menu.addAction(self.__dark_theme_action)
 
         # "Options">"Code Editor"
         action = QtGui.QAction('&Code Editor', self)
@@ -167,8 +183,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @Slot()
     def light_theme(self):
-        self.m_light_theme_action.setChecked(True)
-        self.m_dark_theme_action.setChecked(False)
+        self.__light_theme_action.setChecked(True)
+        self.__dark_theme_action.setChecked(False)
 
         ui_manager = UIManager()
         ui_manager.theme = 'Light'
@@ -177,8 +193,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @Slot()
     def dark_theme(self):
-        self.m_light_theme_action.setChecked(False)
-        self.m_dark_theme_action.setChecked(True)
+        self.__light_theme_action.setChecked(False)
+        self.__dark_theme_action.setChecked(True)
 
         ui_manager = UIManager()
         ui_manager.theme = 'Dark'
@@ -200,9 +216,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     @Slot()
-    def load_parameters(self):
+    def import_parameters(self):
         filename, type_ = QtWidgets.QFileDialog.getOpenFileName(self,\
-                'Load params...', '', 'Text Files (*.txt);;All Files (*)')
+                'Import Parameters', '', 'Text Files (*.txt);;All Files (*)')
         if not filename:
             return
 
@@ -220,24 +236,24 @@ class MainWindow(QtWidgets.QMainWindow):
             if answer == QtWidgets.QMessageBox.No:
                 return
 
-        self.m_parameter_dictionary.load_file(filename)
-        self.m_parameter_table.display()
+        self.__param_dict.load_file(filename)
+        self.__param_table.display()
 
 
     @Slot()
-    def save_parameters(self):
+    def export_parameters(self):
         filename, type_ = QtWidgets.QFileDialog.getSaveFileName(self,\
-                'Save params...', '', 'Text Files (*.txt);;All Files (*)')
+                'Export Parameters', '', 'Text Files (*.txt);;All Files (*)')
         if not filename:
             return
 
-        self.m_parameter_dictionary.write_file(filename)
+        self.__param_dict.write_file(filename)
 
 
     @Slot()
     def tiling(self, rows, columns):
-        dock_area = self.m_central_dock_area
-        docks = self.m_dock_widgets
+        dock_area = self.__central_dock_area
+        docks = self.__dock_widgets
 
         if rows not in [1, 2]:
             return
@@ -306,3 +322,130 @@ class MainWindow(QtWidgets.QMainWindow):
                     https://github.com/neurois3/MODELngspicer</a>
                 </p>
                 """)
+
+
+    @Slot()
+    def save(self):
+        filename, type_ = QtWidgets.QFileDialog.getSaveFileName(self,\
+                'Save', '', 'INI Files (*.ini)')
+        if not filename:
+            return
+
+        config = configparser.ConfigParser()
+        config.optionxform = str
+
+        state = self.saveState()
+        encoded_state = base64.b64encode(state.data()).decode('utf-8')
+        config['MainWindow'] = {\
+                'WindowSize'    : f'{self.width()},{self.height()}',\
+                'LayoutState'   : encoded_state,\
+                }
+
+        state = self.__central_dock_area.saveState()
+        encoded_state = base64.b64encode(state.data()).decode('utf-8')
+        config['CentralDockArea'] = {\
+                'LayoutState'   : encoded_state,\
+                }
+
+        config['Parameters'] = { key: f'{value:.3E}' for key, value in self.__param_dict.items() }
+
+        for i, dock in enumerate(self.__dock_widgets):
+            simulation_plotter = dock.widget()
+            config[f'Page-{i+1}'] = {\
+                    'Title'         : dock.windowTitle(),\
+                    'Enabled'       : simulation_plotter.is_enabled,\
+                    'ScriptFile'    : simulation_plotter.script_file,\
+                    'DataFile'      : simulation_plotter.data_file,\
+                    'AxisTitleX'    : simulation_plotter.graph.getAxis('bottom').labelText,\
+                    'AxisTitleY'    : simulation_plotter.graph.getAxis('left').labelText,\
+                    'AxisUnitsX'    : simulation_plotter.graph.getAxis('bottom').labelUnits,\
+                    'AxisUnitsY'    : simulation_plotter.graph.getAxis('left').labelUnits,\
+                    'LogScaleX'     : simulation_plotter.graph.log_X,\
+                    'LogScaleY'     : simulation_plotter.graph.log_Y,\
+                    'Coordinates'   : simulation_plotter.graph.coordinates,\
+                    'MaxRadius'     : simulation_plotter.graph.rho_max,\
+                    }
+
+        with open(filename, 'w') as f:
+            config.write(f)
+
+
+    @Slot()
+    def load(self):
+        filename, type_ = QtWidgets.QFileDialog.getOpenFileName(self,\
+                'Load', '', 'INI Files (*.ini)')
+        if not filename:
+            return
+
+        config = configparser.ConfigParser()
+        config.read(filename)
+
+        if 'MainWindow' in config:
+            if 'WindowSize' in config['MainWindow']:
+                size_str = config['MainWindow']['WindowSize']
+                width, height = map(int, size_str.split(','))
+                self.resize(width, height)
+
+            if 'LayoutState' in config['MainWindow']:
+                encoded_state = config['MainWindow']['LayoutState']
+                state = QtCore.QByteArray(base64.b64decode(encoded_state))
+                self.restoreState(state)
+
+        if 'CentralDockArea' in config:
+            if 'LayoutState' in config['CentralDockArea']:
+                encoded_state = config['CentralDockArea']['LayoutState']
+                state = QtCore.QByteArray(base64.b64decode(encoded_state))
+                self.__central_dock_area.restoreState(state)
+
+        if 'Parameters' in config:
+            for key in config['Parameters']:
+                value_str = config['Parameters'][key]
+                self.__param_dict[key] = float(value_str)
+                self.__param_table.display()
+
+        for i, dock in enumerate(self.__dock_widgets):
+            simulation_plotter = dock.widget()
+            simulation_plotter.reset()
+            section_str = f'Page-{i+1}'
+            if section_str in config:
+                value = config[section_str].get('Title')
+                if value is not None:
+                    simulation_plotter.setWindowTitle(value)
+
+                value = config[section_str].get('Enabled')
+                if value is not None:
+                    simulation_plotter.is_enabled = (value == 'True')
+
+                value = config[section_str].get('ScriptFile')
+                if value is not None:
+                    simulation_plotter.script_file = value
+
+                value = config[section_str].get('DataFile')
+                if value is not None:
+                    simulation_plotter.data_file = value
+
+                axis_title_X = config[section_str].get('AxisTitleX')
+                axis_title_Y = config[section_str].get('AxisTitleY')
+                axis_units_X = config[section_str].get('AxisUnitsX')
+                axis_units_Y = config[section_str].get('AxisUnitsY')
+
+                simulation_plotter.graph.setLabel(text=axis_title_X, units=axis_units_X, axis='bottom')
+                simulation_plotter.graph.setLabel(text=axis_title_X, units=axis_units_X, axis='left')
+
+                value = config[section_str].get('LogScaleX')
+                if value is not None:
+                    simulation_plotter.graph.log_X = (value == 'True')
+
+                value = config[section_str].get('LogScaleY')
+                if value is not None:
+                    simulation_plotter.graph.log_Y = (value == 'True')
+                
+                value = config[section_str].get('Coordinates')
+                if value is not None:
+                    simulation_plotter.graph.coordinates = value
+
+                value = config[section_str].get('MaxRadius')
+                if value is not None:
+                    simulation_plotter.graph.rho_max = float(value)
+
+            simulation_plotter.update_()
