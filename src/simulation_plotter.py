@@ -20,7 +20,7 @@ import sys, os
 
 from graph import Graph
 from ui_manager import UIManager
-from parameter_dictionary import ParameterDictionary
+from parameter_io import write_param
 import ngspice_con
 
 from code_editor_window import CodeEditorWindow
@@ -166,30 +166,6 @@ class SimulationPlotter(QtWidgets.QMainWindow):
 
 
     @property
-    def param_dict(self):
-        return self.__param_dict
-
-
-    @param_dict.setter
-    def param_dict(self, value):
-        if not isinstance(value, ParameterDictionary):
-            raise ValueError(f'Invalid type for `param_dict`: {type(value).__name__}')
-        self.__param_dict = value
-
-
-    @property
-    def default_title(self):
-        return self.__default_title
-
-
-    @default_title.setter
-    def default_title(self, value):
-        if not isinstance(value, str):
-            raise ValueError('The `default_title` property must be a str.')
-        self.__default_title = value
-
-
-    @property
     def script_file(self):
         return self.__script_file
 
@@ -277,7 +253,7 @@ class SimulationPlotter(QtWidgets.QMainWindow):
         self.is_enabled = True
 
         # Reset the window title
-        self.setWindowTitle(self.default_title)
+        self.setWindowTitle(self.__default_title)
 
         # Reset the graph
         self.graph.coordinates = 'Cartesian'
@@ -420,7 +396,7 @@ class SimulationPlotter(QtWidgets.QMainWindow):
                 # Write parameters to "model.txt"
                 working_dir = os.path.dirname(os.path.abspath(self.script_file))
                 output_file = os.path.join(working_dir, 'model.txt')
-                self.param_dict.write_file(output_file)
+                write_param(self.__param_dict, output_file)
 
                 # Run ngspice_con
                 ngspice_con.run(self.script_file)

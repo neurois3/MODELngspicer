@@ -21,7 +21,7 @@ import base64
 import pyqtgraph as pg
 
 from ui_manager import UIManager
-from parameter_dictionary import ParameterDictionary
+from parameter_io import write_param, read_param
 from parameter_table import ParameterTable
 from simulation_plotter import SimulationPlotter
 from code_editor_window import CodeEditorWindow
@@ -34,15 +34,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.__param_dict = ParameterDictionary()
+        self.__param_dict = {}
         self.__param_table = ParameterTable(self.__param_dict)
         self.setup_ui()
+        self.setWindowTitle('MODELngspicer')
+        self.resize(700, 350)
 
         ui_manager = UIManager()
         ui_manager.apply_theme(self)
-
-        self.setWindowTitle('MODELngspicer')
-        self.resize(700, 350)
 
 
     def setup_ui(self):
@@ -236,7 +235,7 @@ class MainWindow(QtWidgets.QMainWindow):
             if answer == QtWidgets.QMessageBox.No:
                 return
 
-        self.__param_dict.load_file(filename)
+        read_param(self.__param_dict, filename)
         self.__param_table.display()
 
 
@@ -247,7 +246,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if not filename:
             return
 
-        self.__param_dict.write_file(filename)
+        write_param(self.__param_dict, filename)
 
 
     @Slot()
