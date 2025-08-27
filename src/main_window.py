@@ -23,7 +23,7 @@ import pyqtgraph as pg
 from ui_manager import UIManager
 from parameter_io import write_param, read_param
 from parameter_table import ParameterTable
-from simulation_plotter import SimulationPlotter
+from simulation_panel import SimulationPanel
 from code_editor_window import CodeEditorWindow
 
 from path_utils import get_absolute_path
@@ -59,12 +59,12 @@ class MainWindow(QtWidgets.QMainWindow):
         for i in range(0, 10):
             default_title = 'Page {:d}'.format(i+1)
             dock_widget = QtWidgets.QDockWidget(default_title, self.__central_dock_area)
-            simulation_plotter = SimulationPlotter(self.__param_dict, default_title)
+            simulation_panel = SimulationPanel(self.__param_dict, default_title)
 
             dock_widget.setObjectName(default_title)
-            dock_widget.setWidget(simulation_plotter)
-            simulation_plotter.windowTitleChanged.connect(dock_widget.setWindowTitle)
-            self.__param_table.valueChanged.connect(simulation_plotter.update_)
+            dock_widget.setWidget(simulation_panel)
+            simulation_panel.windowTitleChanged.connect(dock_widget.setWindowTitle)
+            self.__param_table.valueChanged.connect(simulation_panel.update_)
 
             self.__dock_widgets.append(dock_widget)
             self.__central_dock_area.addDockWidget(Qt.TopDockWidgetArea, dock_widget)
@@ -112,27 +112,27 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # "View">"Tiling">"1 x 2"
         action = QtGui.QAction('1 x 2', self)
-        action.triggered.connect(lambda: self.tiling(1, 2))
+        action.triggered.connect(lambda: self.tiling_layout(1, 2))
         tiling_menu.addAction(action)
 
         # "View">"Tiling">"1 x 3"
         action = QtGui.QAction('1 x 3', self)
-        action.triggered.connect(lambda: self.tiling(1, 3))
+        action.triggered.connect(lambda: self.tiling_layout(1, 3))
         tiling_menu.addAction(action)
 
         # "View">"Tiling">"2 x 1"
         action = QtGui.QAction('2 x 1', self)
-        action.triggered.connect(lambda: self.tiling(2, 1))
+        action.triggered.connect(lambda: self.tiling_layout(2, 1))
         tiling_menu.addAction(action)
 
         # "View">"Tiling">"2 x 2"
         action = QtGui.QAction('2 x 2', self)
-        action.triggered.connect(lambda: self.tiling(2, 2))
+        action.triggered.connect(lambda: self.tiling_layout(2, 2))
         tiling_menu.addAction(action)
 
         # "View">"Tiling">"2 x 3"
         action = QtGui.QAction('2 x 3', self)
-        action.triggered.connect(lambda: self.tiling(2, 3))
+        action.triggered.connect(lambda: self.tiling_layout(2, 3))
         tiling_menu.addAction(action)
 
         view_menu.addSeparator()
@@ -176,7 +176,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # "Options">"Code Editor"
         action = QtGui.QAction('&Code Editor', self)
-        action.triggered.connect(self.open_editor)
+        action.triggered.connect(self.open_code_editor)
         options_menu.addAction(action)
 
 
@@ -250,7 +250,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     @Slot()
-    def tiling(self, rows, columns):
+    def tiling_layout(self, rows, columns):
         dock_area = self.__central_dock_area
         docks = self.__dock_widgets
 
@@ -289,7 +289,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     @Slot()
-    def open_editor(self):
+    def open_code_editor(self):
         editor = CodeEditorWindow()
         editor.show()
 
@@ -349,20 +349,20 @@ class MainWindow(QtWidgets.QMainWindow):
         config['Parameters'] = { key: f'{value:.3E}' for key, value in self.__param_dict.items() }
 
         for i, dock in enumerate(self.__dock_widgets):
-            simulation_plotter = dock.widget()
+            simulation_panel = dock.widget()
             config[f'Page-{i+1}'] = {\
                     'Title'         : dock.windowTitle(),\
-                    'Enabled'       : simulation_plotter.is_enabled,\
-                    'ScriptFile'    : simulation_plotter.script_file,\
-                    'DataFile'      : simulation_plotter.data_file,\
-                    'AxisTitleX'    : simulation_plotter.graph.getAxis('bottom').labelText,\
-                    'AxisTitleY'    : simulation_plotter.graph.getAxis('left').labelText,\
-                    'AxisUnitsX'    : simulation_plotter.graph.getAxis('bottom').labelUnits,\
-                    'AxisUnitsY'    : simulation_plotter.graph.getAxis('left').labelUnits,\
-                    'LogScaleX'     : simulation_plotter.graph.log_X,\
-                    'LogScaleY'     : simulation_plotter.graph.log_Y,\
-                    'Coordinates'   : simulation_plotter.graph.coordinates,\
-                    'MaxRadius'     : simulation_plotter.graph.rho_max,\
+                    'Enabled'       : simulation_panel.is_enabled,\
+                    'ScriptFile'    : simulation_panel.script_file,\
+                    'DataFile'      : simulation_panel.data_file,\
+                    'AxisTitleX'    : simulation_panel.graph.getAxis('bottom').labelText,\
+                    'AxisTitleY'    : simulation_panel.graph.getAxis('left').labelText,\
+                    'AxisUnitsX'    : simulation_panel.graph.getAxis('bottom').labelUnits,\
+                    'AxisUnitsY'    : simulation_panel.graph.getAxis('left').labelUnits,\
+                    'LogScaleX'     : simulation_panel.graph.logscale_X,\
+                    'LogScaleY'     : simulation_panel.graph.logscale_Y,\
+                    'Coordinates'   : simulation_panel.graph.coordinates,\
+                    'MaxRadius'     : simulation_panel.graph.rho_max,\
                     }
 
         with open(filename, 'w') as f:
@@ -403,48 +403,48 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.__param_table.display()
 
         for i, dock in enumerate(self.__dock_widgets):
-            simulation_plotter = dock.widget()
-            simulation_plotter.reset()
+            simulation_panel = dock.widget()
+            simulation_panel.reset()
             section_str = f'Page-{i+1}'
             if section_str in config:
                 value = config[section_str].get('Title')
                 if value is not None:
-                    simulation_plotter.setWindowTitle(value)
+                    simulation_panel.setWindowTitle(value)
 
                 value = config[section_str].get('Enabled')
                 if value is not None:
-                    simulation_plotter.is_enabled = (value == 'True')
+                    simulation_panel.is_enabled = (value == 'True')
 
                 value = config[section_str].get('ScriptFile')
                 if value is not None:
-                    simulation_plotter.script_file = value
+                    simulation_panel.script_file = value
 
                 value = config[section_str].get('DataFile')
                 if value is not None:
-                    simulation_plotter.data_file = value
+                    simulation_panel.data_file = value
 
                 axis_title_X = config[section_str].get('AxisTitleX')
                 axis_title_Y = config[section_str].get('AxisTitleY')
                 axis_units_X = config[section_str].get('AxisUnitsX')
                 axis_units_Y = config[section_str].get('AxisUnitsY')
 
-                simulation_plotter.graph.setLabel(text=axis_title_X, units=axis_units_X, axis='bottom')
-                simulation_plotter.graph.setLabel(text=axis_title_Y, units=axis_units_Y, axis='left')
+                simulation_panel.graph.setLabel(text=axis_title_X, units=axis_units_X, axis='bottom')
+                simulation_panel.graph.setLabel(text=axis_title_Y, units=axis_units_Y, axis='left')
 
                 value = config[section_str].get('LogScaleX')
                 if value is not None:
-                    simulation_plotter.graph.log_X = (value == 'True')
+                    simulation_panel.graph.logscale_X = (value == 'True')
 
                 value = config[section_str].get('LogScaleY')
                 if value is not None:
-                    simulation_plotter.graph.log_Y = (value == 'True')
+                    simulation_panel.graph.logscale_Y = (value == 'True')
                 
                 value = config[section_str].get('Coordinates')
                 if value is not None:
-                    simulation_plotter.graph.coordinates = value
+                    simulation_panel.graph.coordinates = value
 
                 value = config[section_str].get('MaxRadius')
                 if value is not None:
-                    simulation_plotter.graph.rho_max = float(value)
+                    simulation_panel.graph.rho_max = float(value)
 
-            simulation_plotter.update_()
+            simulation_panel.update_()

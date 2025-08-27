@@ -30,34 +30,34 @@ class Graph(pg.PlotWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.__log_X = False
-        self.__log_Y = False
+        self.__logscale_X = False
+        self.__logscale_Y = False
         self.__coordinates = 'Cartesian' # or 'Polar' or 'Smith Chart'
         self.__rho_max = 1.0 # Maximum radius for 'Polar' plot
 
 
     @property
-    def log_X(self):
-        return self.__log_X
+    def logscale_X(self):
+        return self.__logscale_X
 
 
-    @log_X.setter
-    def log_X(self, value):
+    @logscale_X.setter
+    def logscale_X(self, value):
         if not isinstance(value, bool):
-            raise ValueError('The `log_X` property must be a boolean.')
-        self.__log_X = value
+            raise ValueError('The `logscale_X` property must be a boolean.')
+        self.__logscale_X = value
 
 
     @property
-    def log_Y(self):
-        return self.__log_Y
+    def logscale_Y(self):
+        return self.__logscale_Y
 
 
-    @log_Y.setter
-    def log_Y(self, value):
+    @logscale_Y.setter
+    def logscale_Y(self, value):
         if not isinstance(value, bool):
-            raise ValueError('The `log_Y` property must be a boolean.')
-        self.__log_Y = value
+            raise ValueError('The `logscale_Y` property must be a boolean.')
+        self.__logscale_Y = value
 
 
     @property
@@ -96,7 +96,7 @@ class Graph(pg.PlotWidget):
         self.clear()
         aspect_lock = self.coordinates in ['Polar', 'Smith Chart']
         self.setAspectLocked(aspect_lock)
-        self.setLogMode(x=self.log_X, y=self.log_Y)
+        self.setLogMode(x=self.logscale_X, y=self.logscale_Y)
         self.showGrid(x=True, y=True, alpha=0.3)
 
         # Draw smith chart

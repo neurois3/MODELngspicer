@@ -36,7 +36,7 @@ class LineEdit(QtWidgets.QLineEdit):
         self.doubleClicked.emit()
 
 
-class SimulationPlotter(QtWidgets.QMainWindow):
+class SimulationPanel(QtWidgets.QMainWindow):
 
 
     def __init__(self, param_dict, default_title, parent=None):
@@ -100,18 +100,18 @@ class SimulationPlotter(QtWidgets.QMainWindow):
         log_scale_menu = graph_menu.addMenu('Log Scale')
 
         # "Graph">"Log Scale">"X"
-        self.__log_X_action = QtGui.QAction('X', self)
-        self.__log_X_action.triggered.connect(self.toggle_log_X)
-        self.__log_X_action.setCheckable(True)
-        self.__log_X_action.setChecked(self.__graph.log_X)
-        log_scale_menu.addAction(self.__log_X_action)
+        self.__logscale_X_action = QtGui.QAction('X', self)
+        self.__logscale_X_action.triggered.connect(self.toggle_logscale_X)
+        self.__logscale_X_action.setCheckable(True)
+        self.__logscale_X_action.setChecked(self.__graph.logscale_X)
+        log_scale_menu.addAction(self.__logscale_X_action)
 
         # "Graph">"Log Scale">"Y"
-        self.__log_Y_action = QtGui.QAction('Y', self)
-        self.__log_Y_action.triggered.connect(self.toggle_log_Y)
-        self.__log_Y_action.setCheckable(True)
-        self.__log_Y_action.setChecked(self.__graph.log_Y)
-        log_scale_menu.addAction(self.__log_Y_action)
+        self.__logscale_Y_action = QtGui.QAction('Y', self)
+        self.__logscale_Y_action.triggered.connect(self.toggle_logscale_Y)
+        self.__logscale_Y_action.setCheckable(True)
+        self.__logscale_Y_action.setChecked(self.__graph.logscale_Y)
+        log_scale_menu.addAction(self.__logscale_Y_action)
 
         # "Graph">"Coordinates"
         coordinates_menu = graph_menu.addMenu('Coordinates')
@@ -257,8 +257,8 @@ class SimulationPlotter(QtWidgets.QMainWindow):
 
         # Reset the graph
         self.graph.coordinates = 'Cartesian'
-        self.graph.log_X = False
-        self.graph.log_Y = False
+        self.graph.logscale_X = False
+        self.graph.logscale_Y = False
 
         self.update_()
 
@@ -269,14 +269,14 @@ class SimulationPlotter(QtWidgets.QMainWindow):
 
 
     @Slot()
-    def toggle_log_X(self):
-        self.graph.log_X = not self.graph.log_X
+    def toggle_logscale_X(self):
+        self.graph.logscale_X = not self.graph.logscale_X
         self.update_()
 
 
     @Slot()
-    def toggle_log_Y(self):
-        self.graph.log_Y = not self.graph.log_Y
+    def toggle_logscale_Y(self):
+        self.graph.logscale_Y = not self.graph.logscale_Y
         self.update_()
 
 
@@ -379,8 +379,8 @@ class SimulationPlotter(QtWidgets.QMainWindow):
     @Slot()
     def update_(self):
         # Update check states of the menu actions
-        self.__log_X_action.setChecked(self.graph.log_X)
-        self.__log_Y_action.setChecked(self.graph.log_Y)
+        self.__logscale_X_action.setChecked(self.graph.logscale_X)
+        self.__logscale_Y_action.setChecked(self.graph.logscale_Y)
         for key, action in self.__coordinates_actions.items():
             action.setChecked(key == self.graph.coordinates)
 
