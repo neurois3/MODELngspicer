@@ -430,7 +430,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 axis_units_Y = config[section_str].get('AxisUnitsY')
 
                 simulation_plotter.graph.setLabel(text=axis_title_X, units=axis_units_X, axis='bottom')
-                simulation_plotter.graph.setLabel(text=axis_title_X, units=axis_units_X, axis='left')
+                simulation_plotter.graph.setLabel(text=axis_title_Y, units=axis_units_Y, axis='left')
 
                 value = config[section_str].get('LogScaleX')
                 if value is not None:
