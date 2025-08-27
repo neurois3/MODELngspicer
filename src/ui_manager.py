@@ -14,7 +14,7 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 from PySide6 import QtCore, QtGui
-from path_utils import get_absolute_path
+from path_utils import resolve_path
 
 
 class UIManager(QtCore.QObject):
@@ -45,7 +45,7 @@ class UIManager(QtCore.QObject):
         self._initialized = True
 
         # Set up a search path for image resources
-        search_path = get_absolute_path(__file__, 'resources/images')
+        search_path = resolve_path('<PROJECTDIR>/src/resources/images')
         QtCore.QDir.addSearchPath('img', search_path)
 
     
@@ -70,7 +70,7 @@ class UIManager(QtCore.QObject):
                 else 'dark_theme.qss'
 
         # Read and apply the stylesheet to the given widget
-        path = get_absolute_path(__file__, 'resources/stylesheets/'+stylesheet)
+        path = resolve_path('<PROJECTDIR>/src/resources/stylesheets/'+stylesheet)
         try:
             with open(path, 'r') as f:
                 content = f.read()
@@ -79,5 +79,5 @@ class UIManager(QtCore.QObject):
             print(f'Stylesheet not found: {path}')
         
         # Set the application icon for the widget
-        icon_path = get_absolute_path(__file__, 'resources/icons/app_icon.png')
+        icon_path = resolve_path('<PROJECTDIR>/src/resources/icons/app_icon.png')
         widget.setWindowIcon(QtGui.QIcon(icon_path))

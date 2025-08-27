@@ -15,8 +15,12 @@
 
 import os
 
-# Converts a relative file path into an absolute path
-def get_absolute_path(current_file:str, relative_path:str) -> str:
-    base_dir = os.path.dirname(os.path.abspath(current_file))
-    absolute_path = os.path.join(base_dir, relative_path)
-    return os.path.abspath(absolute_path)
+def resolve_path(path:str) -> str:
+    """Resolve known aliases and return absolute path."""
+    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    aliases = {\
+            '<PROJECTDIR>': base_dir,\
+            }
+    for alias, real_path in aliases.items():
+        path = path.replace(alias, real_path)
+    return os.path.normpath(path)

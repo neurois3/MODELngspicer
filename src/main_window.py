@@ -26,7 +26,7 @@ from parameter_table import ParameterTable
 from simulation_panel import SimulationPanel
 from code_editor_window import CodeEditorWindow
 
-from path_utils import get_absolute_path
+from path_utils import resolve_path
 from app_version import app_version
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -202,14 +202,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @Slot()
     def user_guide_english(self):
-        absolute_path = get_absolute_path(__file__, '../docs/MODELngspicer_User_Guide.pdf')
+        absolute_path = resolve_path('<PROJECTDIR>/docs/MODELngspicer_User_Guide.pdf')
         url = QtCore.QUrl('file:///' + absolute_path)
         QtGui.QDesktopServices.openUrl(url)
 
 
     @Slot()
     def user_guide_japanese(self):
-        absolute_path = get_absolute_path(__file__, '../docs/MODELngspicer_User_Guide_JP.pdf')
+        absolute_path = resolve_path('<PROJECTDIR>/docs/MODELngspicer_User_Guide_JP.pdf')
         url = QtCore.QUrl('file:///' + absolute_path)
         QtGui.QDesktopServices.openUrl(url)
 
