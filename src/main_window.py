@@ -333,6 +333,7 @@ class MainWindow(QtWidgets.QMainWindow):
         config = configparser.ConfigParser()
         config.optionxform = str
 
+        # MainWindow
         state = self.saveState()
         encoded_state = base64.b64encode(state.data()).decode('utf-8')
         config['MainWindow'] = {\
@@ -340,14 +341,17 @@ class MainWindow(QtWidgets.QMainWindow):
                 'LayoutState'   : encoded_state,\
                 }
 
+        # CentralDockArea
         state = self.__central_dock_area.saveState()
         encoded_state = base64.b64encode(state.data()).decode('utf-8')
         config['CentralDockArea'] = {\
                 'LayoutState'   : encoded_state,\
                 }
 
+        # Parameters
         config['Parameters'] = { key: f'{value:.3E}' for key, value in self.__param_dict.items() }
 
+        # Pages
         for i, dock in enumerate(self.__dock_widgets):
             simulation_panel = dock.widget()
             config[f'Page-{i+1}'] = {\
@@ -379,6 +383,14 @@ class MainWindow(QtWidgets.QMainWindow):
         config = configparser.ConfigParser()
         config.read(filename)
 
+        # Progress bar
+        steps = 3 + len(self.__dock_widgets) # MainWindow, CentralDockArea, Parameters, and Pages
+        progress = QtWidgets.QProgressDialog('Loading settings...', 'Cancel', 0, steps, self)
+        progress.setWindowModality(Qt.WindowModal)
+        progress.setMinimumDuration(0)
+        progress.setValue(0)
+
+        # MainWindow
         if 'MainWindow' in config:
             if 'WindowSize' in config['MainWindow']:
                 size_str = config['MainWindow']['WindowSize']
@@ -390,18 +402,27 @@ class MainWindow(QtWidgets.QMainWindow):
                 state = QtCore.QByteArray(base64.b64decode(encoded_state))
                 self.restoreState(state)
 
+        progress.setValue(progress.value() + 1)
+
+        # CentralDockArea
         if 'CentralDockArea' in config:
             if 'LayoutState' in config['CentralDockArea']:
                 encoded_state = config['CentralDockArea']['LayoutState']
                 state = QtCore.QByteArray(base64.b64decode(encoded_state))
                 self.__central_dock_area.restoreState(state)
 
+        progress.setValue(progress.value() + 1)
+
+        # Parameters
         if 'Parameters' in config:
             for key in config['Parameters']:
                 value_str = config['Parameters'][key]
                 self.__param_dict[key] = float(value_str)
                 self.__param_table.display()
 
+        progress.setValue(progress.value() + 1)
+
+        # Pages
         for i, dock in enumerate(self.__dock_widgets):
             simulation_panel = dock.widget()
             simulation_panel.reset()
@@ -447,4 +468,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 if value is not None:
                     simulation_panel.graph.rho_max = float(value)
 
+            # Run simulation and plot results
             simulation_panel.update_()
+            progress.setValue(progress.value() + 1)
+
+        progress.close()
