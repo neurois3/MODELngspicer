@@ -428,45 +428,61 @@ class MainWindow(QtWidgets.QMainWindow):
             simulation_panel.reset()
             section_str = f'Page-{i+1}'
             if section_str in config:
-                value = config[section_str].get('Title')
-                if value is not None:
+
+                if 'Title' in config[section_str]:
+                    value = config[section_str]['Title']
                     simulation_panel.setWindowTitle(value)
 
-                value = config[section_str].get('Enabled')
-                if value is not None:
+                if 'Enabled' in config[section_str]:
+                    value = config[section_str]['Enabled']
                     simulation_panel.is_enabled = (value == 'True')
 
-                value = config[section_str].get('ScriptFile')
-                if value is not None:
-                    simulation_panel.script_file = resolve_path(value)
+                if 'ScriptFile' in config[section_str]:
+                    value = config[section_str]['ScriptFile']
+                    simulation_panel.script_file = resolve_path(value) if value else ''
 
-                value = config[section_str].get('DataFile')
-                if value is not None:
-                    simulation_panel.data_file = resolve_path(value)
+                if 'DataFile' in config[section_str]:
+                    value = config[section_str]['DataFile']
+                    simulation_panel.data_file = resolve_path(value) if value else ''
 
-                axis_title_X = config[section_str].get('AxisTitleX')
-                axis_title_Y = config[section_str].get('AxisTitleY')
-                axis_units_X = config[section_str].get('AxisUnitsX')
-                axis_units_Y = config[section_str].get('AxisUnitsY')
+                if 'LogScaleX' in config[section_str]:
+                    value = config[section_str]['LogScaleX']
+                    simulation_panel.graph.logscale_X = (value == 'True')
+
+                if 'LogScaleY' in config[section_str]:
+                    value = config[section_str]['LogScaleY']
+                    simulation_panel.graph.logscale_Y = (value == 'True')
+
+                if 'Coordinates' in config[section_str]:
+                    value = config[section_str]['Coordinates']
+                    simulation_panel.graph.coordinates = value
+
+                if 'MaxRadius' in config[section_str]:
+                    value = config[section_str]['MaxRadius']
+                    simulation_panel.graph.rho_max = float(value)
+
+                if 'AxisTitleX' in config[section_str]:
+                    axis_title_X = config[section_str]['AxisTitleX']
+                else:
+                    axis_title_X = None
+
+                if 'AxisTitleY' in config[section_str]:
+                    axis_title_Y = config[section_str]['AxisTitleY']
+                else:
+                    axis_title_Y = None
+
+                if 'AxisUnitsX' in config[section_str]:
+                    axis_units_X = config[section_str]['AxisUnitsX']
+                else:
+                    axis_units_X = None
+
+                if 'AxisUnitsY' in config[section_str]:
+                    axis_units_Y = config[section_str]['AxisUnitsY']
+                else:
+                    axis_units_Y = None
 
                 simulation_panel.graph.setLabel(text=axis_title_X, units=axis_units_X, axis='bottom')
                 simulation_panel.graph.setLabel(text=axis_title_Y, units=axis_units_Y, axis='left')
-
-                value = config[section_str].get('LogScaleX')
-                if value is not None:
-                    simulation_panel.graph.logscale_X = (value == 'True')
-
-                value = config[section_str].get('LogScaleY')
-                if value is not None:
-                    simulation_panel.graph.logscale_Y = (value == 'True')
-                
-                value = config[section_str].get('Coordinates')
-                if value is not None:
-                    simulation_panel.graph.coordinates = value
-
-                value = config[section_str].get('MaxRadius')
-                if value is not None:
-                    simulation_panel.graph.rho_max = float(value)
 
             # Run simulation and plot results
             simulation_panel.update_()
