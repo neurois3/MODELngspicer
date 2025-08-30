@@ -28,9 +28,9 @@ class SyntaxHighlighter(QtGui.QSyntaxHighlighter):
         self.__rules = []
         self.__multiline_rules = []
 
-        self.update_theme()
+        self.updateTheme()
         ui_manager = UIManager()
-        ui_manager.themeChanged.connect(self.update_theme)
+        ui_manager.themeChanged.connect(self.updateTheme)
     
 
     def addRule(self, expression, format_):
@@ -110,7 +110,7 @@ class SyntaxHighlighter(QtGui.QSyntaxHighlighter):
 
 
     @Slot()
-    def update_theme(self):
+    def updateTheme(self):
         ui_manager = UIManager()
 
         # Update colors
