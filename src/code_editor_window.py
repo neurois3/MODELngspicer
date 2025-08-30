@@ -83,9 +83,9 @@ class CodeEditorWindow(QtWidgets.QMainWindow):
         # "Options">"Language"
         LANGUAGE_menu = OPTIONS_menu.addMenu('Language')
 
-        # "Options">"Language">"Plain Text", "C/C++", "Matlab/Octave", "Python", "SPICE"
+        # "Options">"Language">"Plain Text", "Python", "SPICE"
         self.__LANGUAGE_actions = []
-        for language in ['Plain Text', 'C/C++', 'Matlab/Octave', 'Python', 'SPICE']:
+        for language in ['Plain Text', 'Python', 'SPICE']:
             action = QtGui.QAction(language, self)
             action.setCheckable(True)
             action.setChecked(language == 'Plain Text')
@@ -130,10 +130,8 @@ class CodeEditorWindow(QtWidgets.QMainWindow):
         root, ext = os.path.splitext(file_name)
         ext = ext.lower()
         self.setLanguage(\
-                     'C/C++'            if ext in ['.c'  , '.h'  , '.cpp', '.hpp']\
-                else 'Matlab/Octave'    if ext in ['.m']\
-                else 'Python'           if ext in ['.py' , '.pyw', '.pyc', '.pyd']\
-                else 'SPICE'            if ext in ['.spice', '.sp', '.cir', '.mod']\
+                     'Python' if ext in ['.py', '.pyw', '.pyc', '.pyd']\
+                else 'SPICE'  if ext in ['.cir', '.sp', '.spice', '.mod']\
                 else 'Plain Text')
 
 
@@ -207,8 +205,6 @@ class CodeEditorWindow(QtWidgets.QMainWindow):
     def setLanguage(self, language:str):
         syntax_highlighter = {\
                 'Plain Text'    : SyntaxHighlighter,\
-                'C/C++'         : SyntaxHighlighter,\
-                'Matlab/Octave' : SyntaxHighlighter_Matlab_Octave,\
                 'Python'        : SyntaxHighlighter_Python,\
                 'SPICE'         : SyntaxHighlighter_SPICE,\
                 }
