@@ -14,7 +14,7 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 from PySide6 import QtCore, QtGui
-from path_utils import resolve_path
+from path_utils import resolvePath
 
 
 class UIManager(QtCore.QObject):
@@ -29,55 +29,51 @@ class UIManager(QtCore.QObject):
     def __new__(cls):
         if cls._inst is None:
             cls._inst = super(UIManager, cls).__new__(cls)
-            cls._inst._initialized = False
+            cls._inst.__initialized = False
 
         return cls._inst
 
 
     def __init__(self):
-        if self._initialized:
+        if self.__initialized:
             return
 
         super().__init__() # Initialize QObject
-
-        self._theme = None
-        self.theme = 'Light' # Use setter to initialize
-        self._initialized = True
+        self.__theme = None
+        self.setTheme('Light') # Use setter to initialize
+        self.__initialized = True
 
         # Set up a search path for image resources
-        search_path = resolve_path('<PROJECTDIR>/src/resources/images')
+        search_path = resolvePath('<PROJECTDIR>/src/resources/images')
         QtCore.QDir.addSearchPath('img', search_path)
 
-    
-    @property
+
     def theme(self):
-        return self._theme
+        return self.__theme
 
 
-    @theme.setter
-    def theme(self, value):
-        if value not in ['Light', 'Dark']:
-            raise ValueError(f'Unsupported theme: {value}')
-
-        if value != self._theme:
-            self._theme = value
-            self.themeChanged.emit(value) # Emit signal when theme changes
+    def setTheme(self, theme):
+        if theme not in ['Light', 'Dark']:
+            raise ValueError(f"Unsupported theme: {theme}")
+        if theme != self.__theme:
+            self.__theme = theme
+            self.themeChanged.emit(theme) # Emit signal when theme changes
 
 
-    def apply_theme(self, widget):
+    def applyTheme(self, widget):
         stylesheet = \
-                'light_theme.qss' if self.theme == 'Light'\
+                'light_theme.qss' if self.__theme == 'Light'\
                 else 'dark_theme.qss'
 
         # Read and apply the stylesheet to the given widget
-        path = resolve_path('<PROJECTDIR>/src/resources/stylesheets/'+stylesheet)
+        path = resolvePath('<PROJECTDIR>/src/resources/stylesheets/'+stylesheet)
         try:
             with open(path, 'r') as f:
                 content = f.read()
                 widget.setStyleSheet(content)
         except FileNotFoundError:
             print(f'Stylesheet not found: {path}')
-        
+
         # Set the application icon for the widget
-        icon_path = resolve_path('<PROJECTDIR>/src/resources/icons/app_icon.png')
+        icon_path = resolvePath('<PROJECTDIR>/src/resources/icons/app_icon.png')
         widget.setWindowIcon(QtGui.QIcon(icon_path))

@@ -30,89 +30,124 @@ class Graph(pg.PlotWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.__logscale_X = False
-        self.__logscale_Y = False
+        self.__log_scale_X = False
+        self.__log_scale_Y = False
         self.__coordinates = 'Cartesian' # or 'Polar' or 'Smith Chart'
-        self.__rho_max = 1.0 # Maximum radius for 'Polar' plot
+        self.__polar_radius = 1.0 # Maximum radius for Polar plot
 
 
-    @property
-    def logscale_X(self):
-        return self.__logscale_X
+    def logScaleX(self):
+        return self.__log_scale_X
 
 
-    @logscale_X.setter
-    def logscale_X(self, value):
+    def setLogScaleX(self, value):
         if not isinstance(value, bool):
-            raise ValueError('The `logscale_X` property must be a boolean.')
-        self.__logscale_X = value
+            raise ValueError("setLogScaleX(): `value` must be a boolean.")
+        self.__log_scale_X = value
 
 
-    @property
-    def logscale_Y(self):
-        return self.__logscale_Y
+    def logScaleY(self):
+        return self.__log_scale_Y
 
 
-    @logscale_Y.setter
-    def logscale_Y(self, value):
+    def setLogScaleY(self, value):
         if not isinstance(value, bool):
-            raise ValueError('The `logscale_Y` property must be a boolean.')
-        self.__logscale_Y = value
+            raise ValueError("setLogScaleY(): `value` must be a boolean.")
+        self.__log_scale_Y = value
 
 
-    @property
     def coordinates(self):
         return self.__coordinates
 
 
-    @coordinates.setter
-    def coordinates(self, value):
+    def setCoordinates(self, value):
         if value not in ['Cartesian', 'Polar', 'Smith Chart']:
-            raise ValueError("The `coordinates` property must be one of ['Cartesian', 'Polar', 'Smith Chart'].")
+            raise ValueError("setCoordinates(): `value` must be one of ['Cartesian', 'Polar', 'Smith Chart'].")
         self.__coordinates = value
 
 
-    @property
-    def rho_max(self):
-        return self.__rho_max
+    def polarRadius(self):
+        return self.__polar_radius
 
 
-    @rho_max.setter
-    def rho_max(self, value):
+    def setPolarRadius(self, value):
         if not isinstance(value, (int, float)):
-            raise ValueError('The `rho_max` property must be a numeric value.')
-        self.__rho_max = value
+            raise ValueError("setPolarRadius(): `value` must be a numeric value (int or float).")
+        self.__polar_radius = value
+
+
+    def axisTitleX(self):
+        return self.getAxis('bottom').labelText
+
+
+    def setAxisTitleX(self, value):
+        if not isinstance(value, str):
+            raise ValueError("setAxisTitleX(): `value` must be a string.")
+        units = self.axisUnitsX()
+        self.setLabel(text=value, units=units, axis='bottom')
+
+
+    def axisTitleY(self):
+        return self.getAxis('left').labelText
+
+
+    def setAxisTitleY(self, value):
+        if not isinstance(value, str):
+            raise ValueError("setAxisTitleY(): `value` must be a string.")
+        units = self.axisUnitsY()
+        self.setLabel(text=value, units=units, axis='left')
+
+
+    def axisUnitsX(self):
+        return self.getAxis('bottom').labelUnits
+
+
+    def setAxisUnitsX(self, value):
+        if not isinstance(value, str):
+            raise ValueError("setAxisUnitsX(): `value` must be a string.")
+        text = self.axisTitleX()
+        self.setLabel(text=text, units=value, axis='bottom')
+
+
+    def axisUnitsY(self):
+        return self.getAxis('left').labelUnits
+
+
+    def setAxisUnitsY(self, value):
+        if not isinstance(value, str):
+            raise ValueError("setAxisUnitsY(): `value` must be a string.")
+        text = self.axisTitleY()
+        self.setLabel(text=text, units=value, axis='left')
 
 
     def initialize(self):
         ui_manager = UIManager()
-        theme = ui_manager.theme
 
         # Set background color
-        background_color = 'w' if theme == 'Light' else 'k'
+        background_color = 'w' if ui_manager.theme() == 'Light' else 'k'
         self.setBackground(background_color)
         
         # Clear existing plots, and set log scales and aspect ratio
         self.clear()
-        aspect_lock = self.coordinates in ['Polar', 'Smith Chart']
+        aspect_lock = self.__coordinates in ['Polar', 'Smith Chart']
         self.setAspectLocked(aspect_lock)
-        self.setLogMode(x=self.logscale_X, y=self.logscale_Y)
+        self.setLogMode(x=self.__log_scale_X, y=self.__log_scale_Y)
         self.showGrid(x=True, y=True, alpha=0.3)
 
         # Draw smith chart
-        if self.coordinates == 'Smith Chart':
-            self.draw_smith()
+        if self.__coordinates == 'Smith Chart':
+            self.drawSmithGrid()
 
         # Draw polar grid
-        elif self.coordinates == 'Polar':
-            self.draw_polar()
+        elif self.__coordinates == 'Polar':
+            self.drawPolarGrid()
 
 
-    def plot_file(self, filename, pen=None, symbol='o', symbol_size=2,\
+    def plotFile(self, file_name, pen=None, symbol='o', symbol_size=2,\
             symbol_pen='w', symbol_brush='w'):
         try:
             # Load a text file
-            data = np.loadtxt(filename)
+            data = np.loadtxt(file_name)
 
         except Exception as e:
             print(str(e))
@@ -132,7 +167,7 @@ class Graph(pg.PlotWidget):
                     symbolBrush=symbol_brush)
 
 
-    def draw_smith(self):
+    def drawSmithGrid(self):
         pen = pg.mkPen(color='#808080', width=1, style=Qt.SolidLine)
 
         # Constant-resistance curves
@@ -154,16 +189,16 @@ class Graph(pg.PlotWidget):
             self.plot(1+radius*np.cos(theta), -radius-radius*np.sin(theta), pen=pen)
 
 
-    def draw_polar(self):
+    def drawPolarGrid(self):
         pen = pg.mkPen(color='#808080', width=1, style=Qt.SolidLine)
 
         # Constant-theta curves
         theta_vector = np.arange(0.0, 2*np.pi, np.pi/6)
         for theta in theta_vector:
-            self.plot([0, self.rho_max*np.cos(theta)], [0, self.rho_max*np.sin(theta)], pen=pen)
+            self.plot([0, self.polar_radius*np.cos(theta)], [0, self.polar_radius*np.sin(theta)], pen=pen)
 
         # Constant-radius curves
-        rho_vector = self.rho_max*np.array([0.0, 0.25, 0.5, 0.75, 1.0])
+        rho_vector = self.polar_radius*np.array([0.0, 0.25, 0.5, 0.75, 1.0])
         theta = np.linspace(0, 2*np.pi, 361)
         for rho in rho_vector:
             self.plot(rho*np.cos(theta), rho*np.sin(theta), pen=pen)

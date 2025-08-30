@@ -15,7 +15,7 @@
 
 import os
 
-def resolve_path(path:str) -> str:
+def resolvePath(path:str) -> str:
     """Resolve known aliases and return absolute path."""
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     aliases = {\

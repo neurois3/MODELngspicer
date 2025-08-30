@@ -17,7 +17,7 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Signal, Slot, Qt
 import sys, os
 
-from exponential_spin_box import ExponentialSpinBox
+from exponential_spinbox import ExponentialSpinBox
 
 class ParameterTable(QtWidgets.QTableWidget):
 
@@ -28,10 +28,10 @@ class ParameterTable(QtWidgets.QTableWidget):
     def __init__(self, param_dict:dict, parent=None):
         super().__init__(parent)
         self.__param_dict = param_dict
-        self.setup_layout()
+        self.setupView()
 
 
-    def setup_layout(self):
+    def setupView(self):
         self.clear()
         
         # Set header dimensions
@@ -44,8 +44,8 @@ class ParameterTable(QtWidgets.QTableWidget):
         self.setColumnCount(2)
 
 
-    def display(self):
-        self.setup_layout()
+    def update_(self):
+        self.setupView()
         self.setRowCount(len(self.__param_dict))
 
         for row, (key, value) in enumerate(self.__param_dict.items()):
@@ -55,16 +55,16 @@ class ParameterTable(QtWidgets.QTableWidget):
             self.setItem(row, 0, widget_item)
 
             # Column 2: parameter value (editable with ExponentialSpinBox)
-            spin_box = ExponentialSpinBox()
-            spin_box.setValue(value)
-            spin_box.valueChanged.connect(self.spin_box_changed)
-            self.setCellWidget(row, 1, spin_box)
+            spinbox = ExponentialSpinBox()
+            spinbox.setValue(value)
+            spinbox.valueChanged.connect(self.spinboxValueChanged)
+            self.setCellWidget(row, 1, spinbox)
 
         self.valueChanged.emit()
 
 
     @Slot()
-    def spin_box_changed(self):
+    def spinboxValueChanged(self):
         sender = self.sender()
 
         for row in range(self.rowCount()):

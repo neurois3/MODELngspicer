@@ -28,78 +28,77 @@ class CodeEditor(CodeView):
         self.__tab_spacing = 4
 
 
-    @property
-    def tab_style(self):
+    def tabStyle(self):
         return self.__tab_style
 
 
-    @tab_style.setter
-    def tab_style(self, style:str):
+    def setTabStyle(self, style:str):
         if style not in ['Soft', 'Hard']:
             raise ValueError(f"Invalid tab style: {style}. Must be 'Soft' or 'Hard'.")
         self.__tab_style = style
 
 
-    @property
-    def tab_spacing(self):
+    def tabSpacing(self):
         return self.__tab_spacing
 
 
-    @tab_spacing.setter
-    def tab_spacing(self, spacing:int):
+    def setTabSpacing(self, spacing:int):
         if not isinstance(spacing, int):
-            raise TypeError(f'tab_spacing must be an integer, got {type(spacing).__name__}')
+            raise TypeError(f"spacing must be an integer, got {type(spacing).__name__}")
         if spacing < 1:
-            raise ValueError(f'tab_spacing must be a positive integer, got {spacing}')
+            raise ValueError(f"spacing must be a positive integer, got {spacing}")
         self.__tab_spacing = spacing
 
-        opt = QtGui.QTextOption(self.document().defaultTextOption())
+        # Apply the specified tab spacing to the document
+        doc = self.document()
+        opt = QtGui.QTextOption(doc.defaultTextOption())
         opt.setTabStopDistance(self.fontMetrics().horizontalAdvance(' ') * spacing)
-        self.document().setDefaultTextOption(opt)
+        doc.setDefaultTextOption(opt)
 
 
     @override
     def keyPressEvent(self, event):
         mod = event.modifiers()
         key = event.key()
-
         if key == Qt.Key_Return:
-            self.handle_return()
+            self.handleReturn()
         elif key == Qt.Key_Tab:
-            self.handle_tab()
+            self.handleTab()
         elif key == Qt.Key_Backspace:
-            self.handle_backspace()
+            self.handleBackspace()
         else:
             super().keyPressEvent(event)
 
 
-    def handle_return(self):
+    def handleReturn(self):
         cursor = self.textCursor()
-        block_text = cursor.block().text()
 
-        indent = re.match(r'^\s*', block_text).group()
+        # Auto indentation
+        indent = re.match(r'^\s*', cursor.block().text()).group()
         self.insertPlainText('\n' + indent)
 
 
-    def handle_tab(self):
-        if self.tab_style == 'Hard':
+    def handleTab(self):
+        if self.__tab_style == 'Hard':
+            # Hard tab
             self.insertPlainText('\t')
         else:
+            # Soft tab
             cursor = self.textCursor()
             prev_text = cursor.block().text()[0:cursor.positionInBlock()]
-            prev_text_length = len(prev_text.replace('\t', ' ' * self.tab_spacing))
+            prev_text_length = len(prev_text.replace('\t', ' ' * self.__tab_spacing))
 
-            insert_count = self.tab_spacing - prev_text_length % self.tab_spacing
+            insert_count = self.__tab_spacing - prev_text_length % self.__tab_spacing
             self.insertPlainText(' ' * insert_count)
 
 
-    def handle_backspace(self):
+    def handleBackspace(self):
         cursor = self.textCursor()
         prev_text = cursor.block().text()[0:cursor.positionInBlock()]
-        prev_text_length = len(prev_text.replace('\t', ' ' * self.tab_spacing))
+        prev_text_length = len(prev_text.replace('\t', ' ' * self.__tab_spacing))
 
         if (not cursor.hasSelection()) and prev_text.isspace() and prev_text.endswith(' '):
-            delete_count = (prev_text_length + self.tab_spacing - 1) % self.tab_spacing + 1
+            delete_count = (prev_text_length + self.__tab_spacing - 1) % self.__tab_spacing + 1
         else:
             delete_count = 1
 
@@ -107,25 +106,25 @@ class CodeEditor(CodeView):
             cursor.deletePreviousChar()
 
 
-    def open_file(self, filename):
-        if not filename:
+    def open_(self, file_name):
+        if not file_name:
             return
-
         try:
-            with open(filename, 'r', encoding='utf-8') as f:
+            with open(file_name, 'r', encoding='utf-8') as f:
                 self.setPlainText(f.read())
                 self.document().setModified(False)
+
         except Exception as e:
-            QtWidgets.QMessageBox.warning(self, 'Open Error', f'Failed to open file:\n{e}')
+            QtWidgets.QMessageBox.warning(self, 'Open Error', f"Failed to open file:\n{e}")
 
 
-    def save_file(self, filename):
-        if not filename:
+    def save_(self, file_name):
+        if not file_name:
             return
-
         try:
-            with open(filename, 'w', encoding='utf-8') as f:
+            with open(file_name, 'w', encoding='utf-8') as f:
                 f.write(self.toPlainText())
                 self.document().setModified(False)
+
         except Exception as e:
-            QtWidgets.QMessageBox.warning(self, 'Save Error', f'Failed to save file:\n{e}')
+            QtWidgets.QMessageBox.warning(self, 'Save Error', f"Failed to save file:\n{e}")

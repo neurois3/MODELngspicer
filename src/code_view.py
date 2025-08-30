@@ -20,7 +20,7 @@ from typing import override
 from ui_manager import UIManager
 from syntax_highlighter import SyntaxHighlighter
 
-def get_monospace_font(size:int=9) -> QtGui.QFont:
+def defaultMonospaceFont(size:int=9) -> QtGui.QFont:
     """
     Returns a platform-appropriate monospace QFont with fallback options.
     """
@@ -54,12 +54,12 @@ class LineNumberArea(QtWidgets.QWidget):
 
     @override
     def sizeHint(self):
-        return QtCore.QSize(self.__editor.line_number_area_width(), 0)
+        return QtCore.QSize(self.__editor.lineNumberAreaWidth(), 0)
 
 
     @override
     def paintEvent(self, event):
-        self.__editor.line_number_area_paint_event(event)
+        self.__editor.lineNumberAreaPaintEvent(event)
 
 
 class CodeView(QtWidgets.QPlainTextEdit):
@@ -74,12 +74,12 @@ class CodeView(QtWidgets.QPlainTextEdit):
         self.__syntax_highlighter = SyntaxHighlighter(self.document())
 
         # Set font
-        self.setFont(get_monospace_font(9))
+        self.setFont(defaultMonospaceFont(9))
 
         # Set stylesheet
-        self.update_theme()
+        self.updateTheme()
         ui_manager = UIManager()
-        ui_manager.themeChanged.connect(self.update_theme)
+        ui_manager.themeChanged.connect(self.updateTheme)
 
         # Configure text rendering options
         opt = QtGui.QTextOption()
@@ -95,37 +95,35 @@ class CodeView(QtWidgets.QPlainTextEdit):
         self.document().setDefaultTextOption(opt)
 
         # Connect editor signals to update slots
-        self.blockCountChanged.connect(self.update_line_number_area_width)
-        self.updateRequest.connect(self.update_line_number_area)
-        self.cursorPositionChanged.connect(self.highlight_current_line)
+        self.blockCountChanged.connect(self.updateLineNumberAreaWidth)
+        self.updateRequest.connect(self.updateLineNumberArea)
+        self.cursorPositionChanged.connect(self.highlightCurrentLine)
 
         # Initialize layout and highlight
-        self.update_line_number_area_width(0)
-        self.highlight_current_line()
+        self.updateLineNumberAreaWidth(0)
+        self.highlightCurrentLine()
 
 
-    @property
-    def syntax_highlighter(self):
+    def syntaxHighlighter(self):
         """
         Returns the current syntax highlighter instance.
         """
         return self.__syntax_highlighter
 
 
-    @syntax_highlighter.setter
-    def syntax_highlighter(self, highlighter):
+    def setSyntaxHighlighter(self, highlighter):
         """
         Sets a new syntax highlighter for the document.
 
         Example:
             editor = CodeView()
-            editor.syntax_highlighter = SyntaxHighlighter(editor.document())
+            editor.setSyntaxHighlighter(SyntaxHighlighter(editor.document()))
         """
         self.__syntax_highlighter.setDocument(None)
         self.__syntax_highlighter = highlighter
 
 
-    def line_number_area_width(self):
+    def lineNumberAreaWidth(self):
         """
         Calculates the width needed to display line numbers based on the number digits.
         """
@@ -149,19 +147,19 @@ class CodeView(QtWidgets.QPlainTextEdit):
         cr = self.contentsRect()
         rect = QtCore.QRect(\
                 cr.left(), cr.top(),\
-                self.line_number_area_width(), cr.height())
+                self.lineNumberAreaWidth(), cr.height())
 
         self.__line_number_area.setGeometry(rect)
     
 
     @Slot()
-    def line_number_area_paint_event(self, event):
+    def lineNumberAreaPaintEvent(self, event):
         """
         Paints the line numbers in the line number area.
         """
         # Fill background
         painter = QtGui.QPainter(self.__line_number_area)
-        painter.fillRect(event.rect(), self.line_number_background_color)
+        painter.fillRect(event.rect(), self.__line_number_background)
 
         block = self.firstVisibleBlock()
         block_number = block.blockNumber()
@@ -173,7 +171,7 @@ class CodeView(QtWidgets.QPlainTextEdit):
         while block.isValid() and top <= event.rect().bottom():
             if block.isVisible() and bottom >= event.rect().top():
                 number = str(block_number + 1)
-                painter.setPen(self.line_number_color) # Line number color
+                painter.setPen(self.__line_number_color) # Line number color
                 painter.drawText(0, top, self.__line_number_area.width(),\
                         self.fontMetrics().height(), Qt.AlignRight, number)
 
@@ -186,12 +184,12 @@ class CodeView(QtWidgets.QPlainTextEdit):
 
 
     @Slot()
-    def update_theme(self):
+    def updateTheme(self):
         ui_manager = UIManager()
-        if ui_manager.theme == 'Light':
-            self.current_line_background_color = QtGui.QColor('#bfbfbf')
-            self.line_number_background_color = QtGui.QColor('#eaeaea')
-            self.line_number_color = QtGui.QColor('#9fa6a7')
+        if ui_manager.theme() == 'Light':
+            self.__current_line_background = QtGui.QColor('#bfbfbf')
+            self.__line_number_background = QtGui.QColor('#eaeaea')
+            self.__line_number_color = QtGui.QColor('#9fa6a7')
             self.setStyleSheet(\
                     f"""
                     QPlainTextEdit {{
@@ -202,9 +200,9 @@ class CodeView(QtWidgets.QPlainTextEdit):
                     }}
                     """)
         else:
-            self.current_line_background_color = QtGui.QColor('#404040')
-            self.line_number_background_color = QtGui.QColor('#151515')
-            self.line_number_color = QtGui.QColor('#605958')
+            self.__current_line_background = QtGui.QColor('#404040')
+            self.__line_number_background = QtGui.QColor('#151515')
+            self.__line_number_color = QtGui.QColor('#605958')
             self.setStyleSheet(\
                     f"""
                     QPlainTextEdit {{
@@ -216,19 +214,19 @@ class CodeView(QtWidgets.QPlainTextEdit):
                     """)
 
         # Force current line highlight to refresh
-        self.highlight_current_line()
+        self.highlightCurrentLine()
 
 
     @Slot()
-    def update_line_number_area_width(self, block_count):
+    def updateLineNumberAreaWidth(self, block_count):
         """
         Updates the left margin of the editor to accommodate the line number area.
         """
-        self.setViewportMargins(self.line_number_area_width(), 0, 0, 0)
+        self.setViewportMargins(self.lineNumberAreaWidth(), 0, 0, 0)
 
     
     @Slot()
-    def update_line_number_area(self, rect, dy):
+    def updateLineNumberArea(self, rect, dy):
         """
         Handles scrolling and repainting of the line number area.
         """
@@ -239,18 +237,18 @@ class CodeView(QtWidgets.QPlainTextEdit):
             self.__line_number_area.update(0, rect.y(), width, rect.height())
 
         if rect.contains(self.viewport().rect()):
-            self.update_line_number_area_width(0)
+            self.updateLineNumberAreaWidth(0)
 
 
     @Slot()
-    def highlight_current_line(self):
+    def highlightCurrentLine(self):
         """
         Highlights the line where the cursor is currenly located.
         """
         extra_selections = []
         if not self.isReadOnly():
             selection = QtWidgets.QTextEdit.ExtraSelection()
-            selection.format.setBackground(self.current_line_background_color) # Highlight color
+            selection.format.setBackground(self.__current_line_background) # Highlight color
             selection.format.setProperty(QtGui.QTextFormat.FullWidthSelection, True)
             selection.cursor = self.textCursor()
             selection.cursor.clearSelection()

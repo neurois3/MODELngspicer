@@ -17,17 +17,17 @@ import os
 import subprocess
 import shutil
 
-def run(script_filename):
+def run(script_name):
     """Executes the ngspice simulation script using 'ngspice_con' command."""
 
     if shutil.which('ngspice_con') is None:
         print("Error: 'ngspice_con' command not found. Please check your system PATH.")
         return False
 
-    working_dir = os.path.dirname(os.path.abspath(script_filename))
+    working_dir = os.path.dirname(os.path.abspath(script_name))
     try:
         # Run 'ngspice_con' command in batch mode
-        subprocess.run(['ngspice_con', '-b', os.path.basename(script_filename)],\
+        subprocess.run(['ngspice_con', '-b', os.path.basename(script_name)],\
                 cwd=working_dir,\
                 stdout=subprocess.DEVNULL,\
                 stderr=subprocess.DEVNULL,\

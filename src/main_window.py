@@ -21,13 +21,13 @@ import base64
 import pyqtgraph as pg
 
 from ui_manager import UIManager
-from parameter_io import write_param, read_param
+from parameter_io import ParameterIO
 from parameter_table import ParameterTable
 from simulation_panel import SimulationPanel
 from code_editor_window import CodeEditorWindow
 
-from path_utils import resolve_path
-from app_version import app_version
+from path_utils import resolvePath
+from app_version import APP_VERSION
 
 class MainWindow(QtWidgets.QMainWindow):
 
@@ -36,192 +36,192 @@ class MainWindow(QtWidgets.QMainWindow):
         super().__init__(parent)
         self.__param_dict = {}
         self.__param_table = ParameterTable(self.__param_dict)
-        self.setup_ui()
+        self.setupUI()
         self.setWindowTitle('MODELngspicer')
         self.resize(700, 350)
 
         ui_manager = UIManager()
-        ui_manager.apply_theme(self)
+        ui_manager.applyTheme(self)
 
 
-    def setup_ui(self):
-        self.__menu_bar = self.menuBar()
-        file_menu = self.__menu_bar.addMenu('&File')
-        view_menu = self.__menu_bar.addMenu('&View')
-        help_menu = self.__menu_bar.addMenu('&Help')
-        options_menu = self.__menu_bar.addMenu('&Options')
-
+    def setupUI(self):
         # Central dock area
-        self.__dock_widgets = []
+        self.__central_docks = []
         self.__central_dock_area = QtWidgets.QMainWindow()
         self.setCentralWidget(self.__central_dock_area)
 
         for i in range(0, 10):
-            default_title = 'Page {:d}'.format(i+1)
-            dock_widget = QtWidgets.QDockWidget(default_title, self.__central_dock_area)
-            simulation_panel = SimulationPanel(self.__param_dict, default_title)
+            name = f"Page {i+1}"
+            dock = QtWidgets.QDockWidget(name, self.__central_dock_area)
+            content = SimulationPanel(self.__param_dict, name)
 
-            dock_widget.setObjectName(default_title)
-            dock_widget.setWidget(simulation_panel)
-            simulation_panel.windowTitleChanged.connect(dock_widget.setWindowTitle)
-            self.__param_table.valueChanged.connect(simulation_panel.update_)
+            dock.setObjectName(name)
+            dock.setWidget(content)
+            content.windowTitleChanged.connect(dock.setWindowTitle)
+            self.__param_table.valueChanged.connect(content.update_)
 
-            self.__dock_widgets.append(dock_widget)
-            self.__central_dock_area.addDockWidget(Qt.TopDockWidgetArea, dock_widget)
+            self.__central_docks.append(dock)
+            self.__central_dock_area.addDockWidget(Qt.TopDockWidgetArea, dock)
 
             if i > 0:
                 # Tabify the docks to the first
-                self.__central_dock_area.tabifyDockWidget(self.__dock_widgets[0], dock_widget)
+                self.__central_dock_area.tabifyDockWidget(self.__central_docks[0], dock)
             if i > 4:
                 # Show only "Page 1" to "Page 5", hide the others
-                dock_widget.hide()
+                dock.hide()
 
         # Raise the first dock widget
-        self.__dock_widgets[0].raise_()
+        self.__central_docks[0].raise_()
 
         # Parameter table
-        dock_widget = QtWidgets.QDockWidget('Parameters', self)
-        dock_widget.setObjectName('Parameters')
-        dock_widget.setWidget(self.__param_table)
-        self.addDockWidget(Qt.RightDockWidgetArea, dock_widget)
+        dock = QtWidgets.QDockWidget('Parameters', self)
+        dock.setObjectName('Parameters')
+        dock.setWidget(self.__param_table)
+        self.addDockWidget(Qt.RightDockWidgetArea, dock)
+
+        # Menus
+        FILE_menu = self.menuBar().addMenu('&File')
+        VIEW_menu = self.menuBar().addMenu('&View')
+        HELP_menu = self.menuBar().addMenu('&Help')
+        OPTIONS_menu = self.menuBar().addMenu('&Options')
 
         # "File">"Import Params..."
         action = QtGui.QAction('&Import Params...', self)
-        action.triggered.connect(self.import_parameters)
-        file_menu.addAction(action)
+        action.triggered.connect(self.importParameters)
+        FILE_menu.addAction(action)
 
         # "File">"Export Params..."
         action = QtGui.QAction('&Export Params...', self)
-        action.triggered.connect(self.export_parameters)
-        file_menu.addAction(action)
+        action.triggered.connect(self.exportParameters)
+        FILE_menu.addAction(action)
 
-        file_menu.addSeparator()
+        FILE_menu.addSeparator()
 
         # "File">"Load..."
         action = QtGui.QAction('&Load...', self)
         action.triggered.connect(self.load)
-        file_menu.addAction(action)
+        FILE_menu.addAction(action)
 
         # "File">"Save..."
         action = QtGui.QAction('&Save...', self)
         action.triggered.connect(self.save)
-        file_menu.addAction(action)
+        FILE_menu.addAction(action)
 
         # "View">"Tiling"
-        tiling_menu = view_menu.addMenu('&Tiling')
+        TILING_menu = VIEW_menu.addMenu('&Tiling')
 
         # "View">"Tiling">"1 x 2"
         action = QtGui.QAction('1 x 2', self)
-        action.triggered.connect(lambda: self.tiling_layout(1, 2))
-        tiling_menu.addAction(action)
+        action.triggered.connect(lambda: self.tilingLayout(1, 2))
+        TILING_menu.addAction(action)
 
         # "View">"Tiling">"1 x 3"
         action = QtGui.QAction('1 x 3', self)
-        action.triggered.connect(lambda: self.tiling_layout(1, 3))
-        tiling_menu.addAction(action)
+        action.triggered.connect(lambda: self.tilingLayout(1, 3))
+        TILING_menu.addAction(action)
 
         # "View">"Tiling">"2 x 1"
         action = QtGui.QAction('2 x 1', self)
-        action.triggered.connect(lambda: self.tiling_layout(2, 1))
-        tiling_menu.addAction(action)
+        action.triggered.connect(lambda: self.tilingLayout(2, 1))
+        TILING_menu.addAction(action)
 
         # "View">"Tiling">"2 x 2"
         action = QtGui.QAction('2 x 2', self)
-        action.triggered.connect(lambda: self.tiling_layout(2, 2))
-        tiling_menu.addAction(action)
+        action.triggered.connect(lambda: self.tilingLayout(2, 2))
+        TILING_menu.addAction(action)
 
         # "View">"Tiling">"2 x 3"
         action = QtGui.QAction('2 x 3', self)
-        action.triggered.connect(lambda: self.tiling_layout(2, 3))
-        tiling_menu.addAction(action)
+        action.triggered.connect(lambda: self.tilingLayout(2, 3))
+        TILING_menu.addAction(action)
 
-        view_menu.addSeparator()
+        VIEW_menu.addSeparator()
 
         # "View">"Page n"
         for i in range(0, 10):
-            view_menu.addAction(self.__dock_widgets[i].toggleViewAction())
+            VIEW_menu.addAction(self.__central_docks[i].toggleViewAction())
 
         # "Help">"User Guide - English"
         action = QtGui.QAction('&User Guide - English', self)
-        action.triggered.connect(self.user_guide_english)
-        help_menu.addAction(action)
+        action.triggered.connect(self.openUserGuide_EN)
+        HELP_menu.addAction(action)
 
         # "Help">"User Guide - Japanese"
         action = QtGui.QAction('&User Guide - Japanese', self)
-        action.triggered.connect(self.user_guide_japanese)
-        help_menu.addAction(action)
+        action.triggered.connect(self.openUserGuide_JP)
+        HELP_menu.addAction(action)
 
         # "Help">"About"
         action = QtGui.QAction('&About...', self)
         action.triggered.connect(self.about)
-        help_menu.addAction(action)
+        HELP_menu.addAction(action)
 
         # "Options">"Theme"
-        theme_menu = options_menu.addMenu('&Theme')
+        THEME_menu = OPTIONS_menu.addMenu('&Theme')
         ui_manager = UIManager()
 
         # "Options">"Theme">"Light"
-        self.__light_theme_action = QtGui.QAction('&Light', self)
-        self.__light_theme_action.setCheckable(True)
-        self.__light_theme_action.setChecked(ui_manager.theme == 'Light')
-        self.__light_theme_action.triggered.connect(self.light_theme)
-        theme_menu.addAction(self.__light_theme_action)
+        self.__LIGHT_THEME_action = QtGui.QAction('&Light', self)
+        self.__LIGHT_THEME_action.setCheckable(True)
+        self.__LIGHT_THEME_action.setChecked(ui_manager.theme() == 'Light')
+        self.__LIGHT_THEME_action.triggered.connect(self.setLightTheme)
+        THEME_menu.addAction(self.__LIGHT_THEME_action)
 
         # "Options">"Theme">"Dark"
-        self.__dark_theme_action = QtGui.QAction('&Dark', self)
-        self.__dark_theme_action.setCheckable(True)
-        self.__dark_theme_action.setChecked(ui_manager.theme == 'Dark')
-        self.__dark_theme_action.triggered.connect(self.dark_theme)
-        theme_menu.addAction(self.__dark_theme_action)
+        self.__DARK_THEME_action = QtGui.QAction('&Dark', self)
+        self.__DARK_THEME_action.setCheckable(True)
+        self.__DARK_THEME_action.setChecked(ui_manager.theme() == 'Dark')
+        self.__DARK_THEME_action.triggered.connect(self.setDarkTheme)
+        THEME_menu.addAction(self.__DARK_THEME_action)
 
         # "Options">"Code Editor"
         action = QtGui.QAction('&Code Editor', self)
-        action.triggered.connect(self.open_code_editor)
-        options_menu.addAction(action)
+        action.triggered.connect(self.openCodeEditor)
+        OPTIONS_menu.addAction(action)
 
 
     @Slot()
-    def light_theme(self):
-        self.__light_theme_action.setChecked(True)
-        self.__dark_theme_action.setChecked(False)
+    def setLightTheme(self):
+        self.__LIGHT_THEME_action.setChecked(True)
+        self.__DARK_THEME_action.setChecked(False)
 
         ui_manager = UIManager()
-        ui_manager.theme = 'Light'
-        ui_manager.apply_theme(self)
+        ui_manager.setTheme('Light')
+        ui_manager.applyTheme(self)
 
 
     @Slot()
-    def dark_theme(self):
-        self.__light_theme_action.setChecked(False)
-        self.__dark_theme_action.setChecked(True)
+    def setDarkTheme(self):
+        self.__LIGHT_THEME_action.setChecked(False)
+        self.__DARK_THEME_action.setChecked(True)
 
         ui_manager = UIManager()
-        ui_manager.theme = 'Dark'
-        ui_manager.apply_theme(self)
+        ui_manager.setTheme('Dark')
+        ui_manager.applyTheme(self)
 
 
     @Slot()
-    def user_guide_english(self):
-        absolute_path = resolve_path('<PROJECTDIR>/docs/MODELngspicer_User_Guide.pdf')
+    def openUserGuide_EN(self):
+        absolute_path = resolvePath('<PROJECTDIR>/docs/MODELngspicer_User_Guide.pdf')
         url = QtCore.QUrl('file:///' + absolute_path)
         QtGui.QDesktopServices.openUrl(url)
 
 
     @Slot()
-    def user_guide_japanese(self):
-        absolute_path = resolve_path('<PROJECTDIR>/docs/MODELngspicer_User_Guide_JP.pdf')
+    def openUserGuide_JP(self):
+        absolute_path = resolvePath('<PROJECTDIR>/docs/MODELngspicer_User_Guide_JP.pdf')
         url = QtCore.QUrl('file:///' + absolute_path)
         QtGui.QDesktopServices.openUrl(url)
 
 
     @Slot()
-    def import_parameters(self):
-        filename, type_ = QtWidgets.QFileDialog.getOpenFileName(self,\
+    def importParameters(self):
+        file_name, type_ = QtWidgets.QFileDialog.getOpenFileName(self,\
                 'Import Parameters', '', 'Text Files (*.txt);;All Files (*)')
-        if not filename:
+        if not file_name:
             return
 
-        basename = os.path.basename(filename)
+        basename = os.path.basename(file_name)
         if basename.lower() == 'model.txt':
             message_box = QtWidgets.QMessageBox()
             message_box.setIcon(QtWidgets.QMessageBox.Warning)
@@ -235,24 +235,26 @@ class MainWindow(QtWidgets.QMainWindow):
             if answer == QtWidgets.QMessageBox.No:
                 return
 
-        read_param(self.__param_dict, filename)
-        self.__param_table.display()
+        parameter_io = ParameterIO()
+        parameter_io.read(self.__param_dict, file_name)
+        self.__param_table.update_()
 
 
     @Slot()
-    def export_parameters(self):
-        filename, type_ = QtWidgets.QFileDialog.getSaveFileName(self,\
+    def exportParameters(self):
+        file_name, type_ = QtWidgets.QFileDialog.getSaveFileName(self,\
                 'Export Parameters', '', 'Text Files (*.txt);;All Files (*)')
-        if not filename:
+        if not file_name:
             return
 
-        write_param(self.__param_dict, filename)
+        parameter_io = ParameterIO()
+        parameter_io.write(self.__param_dict, file_name)
 
 
     @Slot()
-    def tiling_layout(self, rows, columns):
+    def tilingLayout(self, rows, columns):
         dock_area = self.__central_dock_area
-        docks = self.__dock_widgets
+        docks = self.__central_docks
 
         if rows not in [1, 2]:
             return
@@ -289,7 +291,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     @Slot()
-    def open_code_editor(self):
+    def openCodeEditor(self):
         editor = CodeEditorWindow()
         editor.show()
 
@@ -299,7 +301,7 @@ class MainWindow(QtWidgets.QMainWindow):
         QtWidgets.QMessageBox.about(self, 'About',\
                 f"""
                 <h2>MODELngspicer</h2>
-                <p><strong>Version:</strong> {app_version}</p>
+                <p><strong>Version:</strong> {APP_VERSION}</p>
                 <p><strong>Developed by:</strong> ペE</p>
                 <p>
                     <i>MODELngspicer</i> is a Python-based GUI application that streamlines<br>
@@ -325,9 +327,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @Slot()
     def save(self):
-        filename, type_ = QtWidgets.QFileDialog.getSaveFileName(self,\
-                'Save', '', 'INI Files (*.ini)')
-        if not filename:
+        file_name, type_ = QtWidgets.QFileDialog.getSaveFileName(self,\
+                'Save Settings', '', 'INI Files (*.ini)')
+        if not file_name:
             return
 
         config = configparser.ConfigParser()
@@ -338,53 +340,53 @@ class MainWindow(QtWidgets.QMainWindow):
         encoded_state = base64.b64encode(state.data()).decode('utf-8')
         config['MainWindow'] = {\
                 'WindowSize'    : f'{self.width()},{self.height()}',\
-                'LayoutState'   : encoded_state,\
+                'WindowLayout'  : encoded_state,\
                 }
 
         # CentralDockArea
         state = self.__central_dock_area.saveState()
         encoded_state = base64.b64encode(state.data()).decode('utf-8')
         config['CentralDockArea'] = {\
-                'LayoutState'   : encoded_state,\
+                'WindowLayout'  : encoded_state,\
                 }
 
         # Parameters
         config['Parameters'] = { key: f'{value:.3E}' for key, value in self.__param_dict.items() }
 
         # Pages
-        for i, dock in enumerate(self.__dock_widgets):
-            simulation_panel = dock.widget()
+        for i, dock in enumerate(self.__central_docks):
+            content = dock.widget()
             config[f'Page-{i+1}'] = {\
-                    'Title'         : dock.windowTitle(),\
-                    'Enabled'       : simulation_panel.is_enabled,\
-                    'ScriptFile'    : simulation_panel.script_file,\
-                    'DataFile'      : simulation_panel.data_file,\
-                    'AxisTitleX'    : simulation_panel.graph.getAxis('bottom').labelText,\
-                    'AxisTitleY'    : simulation_panel.graph.getAxis('left').labelText,\
-                    'AxisUnitsX'    : simulation_panel.graph.getAxis('bottom').labelUnits,\
-                    'AxisUnitsY'    : simulation_panel.graph.getAxis('left').labelUnits,\
-                    'LogScaleX'     : simulation_panel.graph.logscale_X,\
-                    'LogScaleY'     : simulation_panel.graph.logscale_Y,\
-                    'Coordinates'   : simulation_panel.graph.coordinates,\
-                    'MaxRadius'     : simulation_panel.graph.rho_max,\
+                    'Title'         : content.windowTitle(),\
+                    'Enabled'       : content.enabled(),\
+                    'ScriptFile'    : content.scriptFile(),\
+                    'DataFile'      : content.dataFile(),\
+                    'AxisTitleX'    : content.graph().axisTitleX(),\
+                    'AxisTitleY'    : content.graph().axisTitleY(),\
+                    'AxisUnitsX'    : content.graph().axisUnitsX(),\
+                    'AxisUnitsY'    : content.graph().axisUnitsY(),\
+                    'LogScaleX'     : content.graph().logScaleX(),\
+                    'LogScaleY'     : content.graph().logScaleY(),\
+                    'Coordinates'   : content.graph().coordinates(),\
+                    'PolarRadius'   : content.graph().polarRadius(),\
                     }
 
-        with open(filename, 'w') as f:
+        with open(file_name, 'w') as f:
             config.write(f)
 
 
     @Slot()
     def load(self):
-        filename, type_ = QtWidgets.QFileDialog.getOpenFileName(self,\
-                'Load', '', 'INI Files (*.ini)')
-        if not filename:
+        file_name, type_ = QtWidgets.QFileDialog.getOpenFileName(self,\
+                'Load Settings', '', 'INI Files (*.ini)')
+        if not file_name:
             return
 
         config = configparser.ConfigParser()
-        config.read(filename)
+        config.read(file_name)
 
         # Progress bar
-        steps = 3 + len(self.__dock_widgets) # MainWindow, CentralDockArea, Parameters, and Pages
+        steps = 3 + len(self.__central_docks) # MainWindow, CentralDockArea, Parameters, and Pages
         progress = QtWidgets.QProgressDialog('Loading settings...', 'Cancel', 0, steps, self)
         progress.setWindowModality(Qt.WindowModal)
         progress.setMinimumDuration(0)
@@ -397,8 +399,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 width, height = map(int, size_str.split(','))
                 self.resize(width, height)
 
-            if 'LayoutState' in config['MainWindow']:
-                encoded_state = config['MainWindow']['LayoutState']
+            if 'WindowLayout' in config['MainWindow']:
+                encoded_state = config['MainWindow']['WindowLayout']
                 state = QtCore.QByteArray(base64.b64decode(encoded_state))
                 self.restoreState(state)
 
@@ -406,8 +408,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # CentralDockArea
         if 'CentralDockArea' in config:
-            if 'LayoutState' in config['CentralDockArea']:
-                encoded_state = config['CentralDockArea']['LayoutState']
+            if 'WindowLayout' in config['CentralDockArea']:
+                encoded_state = config['CentralDockArea']['WindowLayout']
                 state = QtCore.QByteArray(base64.b64decode(encoded_state))
                 self.__central_dock_area.restoreState(state)
 
@@ -418,74 +420,67 @@ class MainWindow(QtWidgets.QMainWindow):
             for key in config['Parameters']:
                 value_str = config['Parameters'][key]
                 self.__param_dict[key] = float(value_str)
-                self.__param_table.display()
+                self.__param_table.update_()
 
         progress.setValue(progress.value() + 1)
 
         # Pages
-        for i, dock in enumerate(self.__dock_widgets):
-            simulation_panel = dock.widget()
-            simulation_panel.reset()
-            section_str = f'Page-{i+1}'
-            if section_str in config:
+        for i, dock in enumerate(self.__central_docks):
+            content = dock.widget()
+            content.reset()
+            section = f'Page-{i+1}'
+            if section in config:
 
-                if 'Title' in config[section_str]:
-                    value = config[section_str]['Title']
-                    simulation_panel.setWindowTitle(value)
+                if 'Title' in config[section]:
+                    value = config[section]['Title']
+                    content.setWindowTitle(value)
 
-                if 'Enabled' in config[section_str]:
-                    value = config[section_str]['Enabled']
-                    simulation_panel.is_enabled = (value == 'True')
+                if 'Enabled' in config[section]:
+                    value = config[section]['Enabled']
+                    content.setEnabled(value == 'True')
 
-                if 'ScriptFile' in config[section_str]:
-                    value = config[section_str]['ScriptFile']
-                    simulation_panel.script_file = resolve_path(value) if value else ''
+                if 'ScriptFile' in config[section]:
+                    value = config[section]['ScriptFile']
+                    content.setScriptFile(resolvePath(value) if value else '')
 
-                if 'DataFile' in config[section_str]:
-                    value = config[section_str]['DataFile']
-                    simulation_panel.data_file = resolve_path(value) if value else ''
+                if 'DataFile' in config[section]:
+                    value = config[section]['DataFile']
+                    content.setDataFile(resolvePath(value) if value else '')
 
-                if 'LogScaleX' in config[section_str]:
-                    value = config[section_str]['LogScaleX']
-                    simulation_panel.graph.logscale_X = (value == 'True')
+                if 'LogScaleX' in config[section]:
+                    value = config[section]['LogScaleX']
+                    content.graph().setLogScaleX(value == 'True')
 
-                if 'LogScaleY' in config[section_str]:
-                    value = config[section_str]['LogScaleY']
-                    simulation_panel.graph.logscale_Y = (value == 'True')
+                if 'LogScaleY' in config[section]:
+                    value = config[section]['LogScaleY']
+                    content.graph().setLogScaleY(value == 'True')
 
-                if 'Coordinates' in config[section_str]:
-                    value = config[section_str]['Coordinates']
-                    simulation_panel.graph.coordinates = value
+                if 'Coordinates' in config[section]:
+                    value = config[section]['Coordinates']
+                    content.graph().setCoordinates(value)
 
-                if 'MaxRadius' in config[section_str]:
-                    value = config[section_str]['MaxRadius']
-                    simulation_panel.graph.rho_max = float(value)
+                if 'PolarRadius' in config[section]:
+                    value = config[section]['PolarRadius']
+                    content.graph().setPolarRadius(float(value))
 
-                if 'AxisTitleX' in config[section_str]:
-                    axis_title_X = config[section_str]['AxisTitleX']
-                else:
-                    axis_title_X = None
+                if 'AxisTitleX' in config[section]:
+                    value = config[section]['AxisTitleX']
+                    content.graph().setAxisTitleX(value)
 
-                if 'AxisTitleY' in config[section_str]:
-                    axis_title_Y = config[section_str]['AxisTitleY']
-                else:
-                    axis_title_Y = None
+                if 'AxisTitleY' in config[section]:
+                    value = config[section]['AxisTitleY']
+                    content.graph().setAxisTitleY(value)
 
-                if 'AxisUnitsX' in config[section_str]:
-                    axis_units_X = config[section_str]['AxisUnitsX']
-                else:
-                    axis_units_X = None
+                if 'AxisUnitsX' in config[section]:
+                    value = config[section]['AxisUnitsX']
+                    content.graph().setAxisUnitsX(value)
 
-                if 'AxisUnitsY' in config[section_str]:
-                    axis_units_Y = config[section_str]['AxisUnitsY']
-                else:
-                    axis_units_Y = None
-
-                simulation_panel.graph.setLabel(text=axis_title_X, units=axis_units_X, axis='bottom')
-                simulation_panel.graph.setLabel(text=axis_title_Y, units=axis_units_Y, axis='left')
+                if 'AxisUnitsY' in config[section]:
+                    value = config[section]['AxisUnitsY']
+                    content.graph().setAxisUnitsY(value)
 
             # Run simulation and plot results
-            simulation_panel.update_()
+            content.update_()
             progress.setValue(progress.value() + 1)
 
         progress.close()

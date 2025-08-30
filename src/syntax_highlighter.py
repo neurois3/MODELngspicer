@@ -33,11 +33,11 @@ class SyntaxHighlighter(QtGui.QSyntaxHighlighter):
         ui_manager.themeChanged.connect(self.update_theme)
     
 
-    def add_rule(self, expression, format_):
+    def addRule(self, expression, format_):
         self.__rules.append((expression, format_))
 
 
-    def add_multiline_rule(self, start, stop, format_):
+    def addMultiLineRule(self, start, stop, format_):
         self.__multiline_rules.append((start, stop, format_))
 
 
@@ -46,7 +46,11 @@ class SyntaxHighlighter(QtGui.QSyntaxHighlighter):
         self.__multiline_rules.clear()
 
 
-    def highlight_keywords(self, text):
+    def refreshRules(self):
+        pass
+
+
+    def highlightWords(self, text):
         for (expression, format_) in self.__rules:
             for match in re.finditer(expression, text):
                 start, end = match.span()
@@ -55,7 +59,7 @@ class SyntaxHighlighter(QtGui.QSyntaxHighlighter):
                 self.setFormat(start, end - start, format_)
 
 
-    def highlight_multiline(self, text):
+    def highlightMultiLines(self, text):
         block_state = self.previousBlockState()
         start_index = 0
         index = 0
@@ -96,8 +100,8 @@ class SyntaxHighlighter(QtGui.QSyntaxHighlighter):
 
     @override
     def highlightBlock(self, text):
-        self.highlight_multiline(text)
-        self.highlight_keywords(text)
+        self.highlightMultiLines(text)
+        self.highlightWords(text)
 
         # Whitespace characters
         for match in re.finditer(r'\s', text):
@@ -105,16 +109,12 @@ class SyntaxHighlighter(QtGui.QSyntaxHighlighter):
             self.setFormat(start, end - start, self.whitespace_format)
 
 
-    def refresh_rules(self):
-        pass
-
-
     @Slot()
     def update_theme(self):
         ui_manager = UIManager()
 
         # Update colors
-        if ui_manager.theme == 'Light':
+        if ui_manager.theme() == 'Light':
             # Strings
             self.string_format = QtGui.QTextCharFormat()
             self.string_format.setForeground(QtGui.QColor('#665295'))
@@ -156,7 +156,7 @@ class SyntaxHighlighter(QtGui.QSyntaxHighlighter):
             self.whitespace_format.setForeground(QtGui.QColor('#262626'))
 
         # Refresh syntax rules
-        self.refresh_rules()
+        self.refreshRules()
 
         # Redraw
         self.rehighlight()
@@ -167,148 +167,148 @@ class SyntaxHighlighter_Python(SyntaxHighlighter):
 
 
     @override
-    def refresh_rules(self):
+    def refreshRules(self):
         self.clear()
 
         # Strings
-        self.add_multiline_rule("'''", "'''", self.string_format)
-        self.add_multiline_rule('"""', '"""', self.string_format)
-        self.add_multiline_rule("'", "'", self.string_format)
-        self.add_multiline_rule('"', '"', self.string_format)
+        self.addMultiLineRule("'''", "'''", self.string_format)
+        self.addMultiLineRule('"""', '"""', self.string_format)
+        self.addMultiLineRule("'", "'", self.string_format)
+        self.addMultiLineRule('"', '"', self.string_format)
 
         # Comments
-        self.add_rule(r'#.*$', self.comment_format)
+        self.addRule(r'#.*$', self.comment_format)
 
         # Spectial methods: e.g. __name__
-        self.add_rule(r'\b__\w+__\b', self.function_format)
+        self.addRule(r'\b__\w+__\b', self.function_format)
 
         # Decorators: e.g. @staticmethod
-        self.add_rule(r'@\w+', self.function_format)
+        self.addRule(r'@\w+', self.function_format)
 
         # Class definitions: class <class name>
-        self.add_rule(r'(?<=class\s)\w+', self.function_format)
+        self.addRule(r'(?<=class\s)\w+', self.function_format)
 
         # Function definitions: def <function name>
-        self.add_rule(r'(?<=def\s)\w+', self.function_format)
+        self.addRule(r'(?<=def\s)\w+', self.function_format)
 
         # Built-in constants
-        self.add_rule(r'\bFalse\b', self.function_format)
-        self.add_rule(r'\bTrue\b', self.function_format)
-        self.add_rule(r'\bNone\b', self.function_format)
-        self.add_rule(r'\bNotImplemented\b', self.function_format)
-        self.add_rule(r'\bEllipsis\b', self.function_format)
+        self.addRule(r'\bFalse\b', self.function_format)
+        self.addRule(r'\bTrue\b', self.function_format)
+        self.addRule(r'\bNone\b', self.function_format)
+        self.addRule(r'\bNotImplemented\b', self.function_format)
+        self.addRule(r'\bEllipsis\b', self.function_format)
 
         # Built-in functions
-        self.add_rule(r'\babs\b', self.function_format)
-        self.add_rule(r'\baiter\b', self.function_format)
-        self.add_rule(r'\ball\b', self.function_format)
-        self.add_rule(r'\banext\b', self.function_format)
-        self.add_rule(r'\bany\b', self.function_format)
-        self.add_rule(r'\bascii\b', self.function_format)
-        self.add_rule(r'\bbin\b', self.function_format)
-        self.add_rule(r'\bbool\b', self.function_format)
-        self.add_rule(r'\bbreakpoint\b', self.function_format)
-        self.add_rule(r'\bbytearray\b', self.function_format)
-        self.add_rule(r'\bbytes\b', self.function_format)
-        self.add_rule(r'\bcallable\b', self.function_format)
-        self.add_rule(r'\bchr\b', self.function_format)
-        self.add_rule(r'\bclassmethod\b', self.function_format)
-        self.add_rule(r'\bcompile\b', self.function_format)
-        self.add_rule(r'\bcomplex\b', self.function_format)
-        self.add_rule(r'\bdelattr\b', self.function_format)
-        self.add_rule(r'\bdict\b', self.function_format)
-        self.add_rule(r'\bdir\b', self.function_format)
-        self.add_rule(r'\bdivmod\b', self.function_format)
-        self.add_rule(r'\benumerate\b', self.function_format)
-        self.add_rule(r'\beval\b', self.function_format)
-        self.add_rule(r'\bexec\b', self.function_format)
-        self.add_rule(r'\bfilter\b', self.function_format)
-        self.add_rule(r'\bfloat\b', self.function_format)
-        self.add_rule(r'\bformat\b', self.function_format)
-        self.add_rule(r'\bfrozenset\b', self.function_format)
-        self.add_rule(r'\bgetattr\b', self.function_format)
-        self.add_rule(r'\bglobals\b', self.function_format)
-        self.add_rule(r'\bhasattr\b', self.function_format)
-        self.add_rule(r'\bhash\b', self.function_format)
-        self.add_rule(r'\bhelp\b', self.function_format)
-        self.add_rule(r'\bhex\b', self.function_format)
-        self.add_rule(r'\bid\b', self.function_format)
-        self.add_rule(r'\binput\b', self.function_format)
-        self.add_rule(r'\bint\b', self.function_format)
-        self.add_rule(r'\bisinstance\b', self.function_format)
-        self.add_rule(r'\bissubclass\b', self.function_format)
-        self.add_rule(r'\biter\b', self.function_format)
-        self.add_rule(r'\blen\b', self.function_format)
-        self.add_rule(r'\blist\b', self.function_format)
-        self.add_rule(r'\blocals\b', self.function_format)
-        self.add_rule(r'\bmap\b', self.function_format)
-        self.add_rule(r'\bmax\b', self.function_format)
-        self.add_rule(r'\bmemoryview\b', self.function_format)
-        self.add_rule(r'\bmin\b', self.function_format)
-        self.add_rule(r'\bnext\b', self.function_format)
-        self.add_rule(r'\bobject\b', self.function_format)
-        self.add_rule(r'\boct\b', self.function_format)
-        self.add_rule(r'\bopen\b', self.function_format)
-        self.add_rule(r'\bord\b', self.function_format)
-        self.add_rule(r'\bpow\b', self.function_format)
-        self.add_rule(r'\bprint\b', self.function_format)
-        self.add_rule(r'\bproperty\b', self.function_format)
-        self.add_rule(r'\brange\b', self.function_format)
-        self.add_rule(r'\brepr\b', self.function_format)
-        self.add_rule(r'\breversed\b', self.function_format)
-        self.add_rule(r'\bround\b', self.function_format)
-        self.add_rule(r'\bset\b', self.function_format)
-        self.add_rule(r'\bsetattr\b', self.function_format)
-        self.add_rule(r'\bslice\b', self.function_format)
-        self.add_rule(r'\bsorted\b', self.function_format)
-        self.add_rule(r'\bstaticmethod\b', self.function_format)
-        self.add_rule(r'\bstr\b', self.function_format)
-        self.add_rule(r'\bsum\b', self.function_format)
-        self.add_rule(r'\bsuper\b', self.function_format)
-        self.add_rule(r'\btuple\b', self.function_format)
-        self.add_rule(r'\btype\b', self.function_format)
-        self.add_rule(r'\bvars\b', self.function_format)
-        self.add_rule(r'\bzip\b', self.function_format)
+        self.addRule(r'\babs\b', self.function_format)
+        self.addRule(r'\baiter\b', self.function_format)
+        self.addRule(r'\ball\b', self.function_format)
+        self.addRule(r'\banext\b', self.function_format)
+        self.addRule(r'\bany\b', self.function_format)
+        self.addRule(r'\bascii\b', self.function_format)
+        self.addRule(r'\bbin\b', self.function_format)
+        self.addRule(r'\bbool\b', self.function_format)
+        self.addRule(r'\bbreakpoint\b', self.function_format)
+        self.addRule(r'\bbytearray\b', self.function_format)
+        self.addRule(r'\bbytes\b', self.function_format)
+        self.addRule(r'\bcallable\b', self.function_format)
+        self.addRule(r'\bchr\b', self.function_format)
+        self.addRule(r'\bclassmethod\b', self.function_format)
+        self.addRule(r'\bcompile\b', self.function_format)
+        self.addRule(r'\bcomplex\b', self.function_format)
+        self.addRule(r'\bdelattr\b', self.function_format)
+        self.addRule(r'\bdict\b', self.function_format)
+        self.addRule(r'\bdir\b', self.function_format)
+        self.addRule(r'\bdivmod\b', self.function_format)
+        self.addRule(r'\benumerate\b', self.function_format)
+        self.addRule(r'\beval\b', self.function_format)
+        self.addRule(r'\bexec\b', self.function_format)
+        self.addRule(r'\bfilter\b', self.function_format)
+        self.addRule(r'\bfloat\b', self.function_format)
+        self.addRule(r'\bformat\b', self.function_format)
+        self.addRule(r'\bfrozenset\b', self.function_format)
+        self.addRule(r'\bgetattr\b', self.function_format)
+        self.addRule(r'\bglobals\b', self.function_format)
+        self.addRule(r'\bhasattr\b', self.function_format)
+        self.addRule(r'\bhash\b', self.function_format)
+        self.addRule(r'\bhelp\b', self.function_format)
+        self.addRule(r'\bhex\b', self.function_format)
+        self.addRule(r'\bid\b', self.function_format)
+        self.addRule(r'\binput\b', self.function_format)
+        self.addRule(r'\bint\b', self.function_format)
+        self.addRule(r'\bisinstance\b', self.function_format)
+        self.addRule(r'\bissubclass\b', self.function_format)
+        self.addRule(r'\biter\b', self.function_format)
+        self.addRule(r'\blen\b', self.function_format)
+        self.addRule(r'\blist\b', self.function_format)
+        self.addRule(r'\blocals\b', self.function_format)
+        self.addRule(r'\bmap\b', self.function_format)
+        self.addRule(r'\bmax\b', self.function_format)
+        self.addRule(r'\bmemoryview\b', self.function_format)
+        self.addRule(r'\bmin\b', self.function_format)
+        self.addRule(r'\bnext\b', self.function_format)
+        self.addRule(r'\bobject\b', self.function_format)
+        self.addRule(r'\boct\b', self.function_format)
+        self.addRule(r'\bopen\b', self.function_format)
+        self.addRule(r'\bord\b', self.function_format)
+        self.addRule(r'\bpow\b', self.function_format)
+        self.addRule(r'\bprint\b', self.function_format)
+        self.addRule(r'\bproperty\b', self.function_format)
+        self.addRule(r'\brange\b', self.function_format)
+        self.addRule(r'\brepr\b', self.function_format)
+        self.addRule(r'\breversed\b', self.function_format)
+        self.addRule(r'\bround\b', self.function_format)
+        self.addRule(r'\bset\b', self.function_format)
+        self.addRule(r'\bsetattr\b', self.function_format)
+        self.addRule(r'\bslice\b', self.function_format)
+        self.addRule(r'\bsorted\b', self.function_format)
+        self.addRule(r'\bstaticmethod\b', self.function_format)
+        self.addRule(r'\bstr\b', self.function_format)
+        self.addRule(r'\bsum\b', self.function_format)
+        self.addRule(r'\bsuper\b', self.function_format)
+        self.addRule(r'\btuple\b', self.function_format)
+        self.addRule(r'\btype\b', self.function_format)
+        self.addRule(r'\bvars\b', self.function_format)
+        self.addRule(r'\bzip\b', self.function_format)
 
         # Numbers
-        self.add_rule(r'\b(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?\b', self.number_format)
-        self.add_rule(r'\b0[xX][0-9a-fA-F]+\b', self.number_format)
-        self.add_rule(r'\b0[oO][0-7]+\b', self.number_format)
-        self.add_rule(r'\b0[bB][0-1]+\b', self.number_format)
+        self.addRule(r'\b(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?\b', self.number_format)
+        self.addRule(r'\b0[xX][0-9a-fA-F]+\b', self.number_format)
+        self.addRule(r'\b0[oO][0-7]+\b', self.number_format)
+        self.addRule(r'\b0[bB][0-1]+\b', self.number_format)
 
         # Keywords
-        self.add_rule(r'\band\b', self.keyword_format)
-        self.add_rule(r'\bas\b', self.keyword_format)
-        self.add_rule(r'\bassert\b', self.keyword_format)
-        self.add_rule(r'\basync\b', self.keyword_format)
-        self.add_rule(r'\bawait\b', self.keyword_format)
-        self.add_rule(r'\bbreak\b', self.keyword_format)
-        self.add_rule(r'\bclass\b', self.keyword_format)
-        self.add_rule(r'\bcontinue\b', self.keyword_format)
-        self.add_rule(r'\bdef\b', self.keyword_format)
-        self.add_rule(r'\bdel\b', self.keyword_format)
-        self.add_rule(r'\belif\b', self.keyword_format)
-        self.add_rule(r'\belse\b', self.keyword_format)
-        self.add_rule(r'\bexcept\b', self.keyword_format)
-        self.add_rule(r'\bfinally\b', self.keyword_format)
-        self.add_rule(r'\bfor\b', self.keyword_format)
-        self.add_rule(r'\bfrom\b', self.keyword_format)
-        self.add_rule(r'\bglobal\b', self.keyword_format)
-        self.add_rule(r'\bif\b', self.keyword_format)
-        self.add_rule(r'\bimport\b', self.keyword_format)
-        self.add_rule(r'\bin\b', self.keyword_format)
-        self.add_rule(r'\bis\b', self.keyword_format)
-        self.add_rule(r'\blambda\b', self.keyword_format)
-        self.add_rule(r'\bnonlocal\b', self.keyword_format)
-        self.add_rule(r'\bnot\b', self.keyword_format)
-        self.add_rule(r'\bor\b', self.keyword_format)
-        self.add_rule(r'\bpass\b', self.keyword_format)
-        self.add_rule(r'\braise\b', self.keyword_format)
-        self.add_rule(r'\breturn\b', self.keyword_format)
-        self.add_rule(r'\btry\b', self.keyword_format)
-        self.add_rule(r'\bwhile\b', self.keyword_format)
-        self.add_rule(r'\bwith\b', self.keyword_format)
-        self.add_rule(r'\byield\b', self.keyword_format)
+        self.addRule(r'\band\b', self.keyword_format)
+        self.addRule(r'\bas\b', self.keyword_format)
+        self.addRule(r'\bassert\b', self.keyword_format)
+        self.addRule(r'\basync\b', self.keyword_format)
+        self.addRule(r'\bawait\b', self.keyword_format)
+        self.addRule(r'\bbreak\b', self.keyword_format)
+        self.addRule(r'\bclass\b', self.keyword_format)
+        self.addRule(r'\bcontinue\b', self.keyword_format)
+        self.addRule(r'\bdef\b', self.keyword_format)
+        self.addRule(r'\bdel\b', self.keyword_format)
+        self.addRule(r'\belif\b', self.keyword_format)
+        self.addRule(r'\belse\b', self.keyword_format)
+        self.addRule(r'\bexcept\b', self.keyword_format)
+        self.addRule(r'\bfinally\b', self.keyword_format)
+        self.addRule(r'\bfor\b', self.keyword_format)
+        self.addRule(r'\bfrom\b', self.keyword_format)
+        self.addRule(r'\bglobal\b', self.keyword_format)
+        self.addRule(r'\bif\b', self.keyword_format)
+        self.addRule(r'\bimport\b', self.keyword_format)
+        self.addRule(r'\bin\b', self.keyword_format)
+        self.addRule(r'\bis\b', self.keyword_format)
+        self.addRule(r'\blambda\b', self.keyword_format)
+        self.addRule(r'\bnonlocal\b', self.keyword_format)
+        self.addRule(r'\bnot\b', self.keyword_format)
+        self.addRule(r'\bor\b', self.keyword_format)
+        self.addRule(r'\bpass\b', self.keyword_format)
+        self.addRule(r'\braise\b', self.keyword_format)
+        self.addRule(r'\breturn\b', self.keyword_format)
+        self.addRule(r'\btry\b', self.keyword_format)
+        self.addRule(r'\bwhile\b', self.keyword_format)
+        self.addRule(r'\bwith\b', self.keyword_format)
+        self.addRule(r'\byield\b', self.keyword_format)
 
 
 
@@ -317,112 +317,112 @@ class SyntaxHighlighter_Matlab_Octave(SyntaxHighlighter):
 
 
     @override
-    def refresh_rules(self):
+    def refreshRules(self):
         self.clear()
 
         # Strings
-        self.add_multiline_rule(r"(?<=[^\)\]\}a-zA-Z_0-9])'", r"'", self.string_format)
-        self.add_multiline_rule(r'"', r'"', self.string_format)
+        self.addMultiLineRule(r"(?<=[^\)\]\}a-zA-Z_0-9])'", r"'", self.string_format)
+        self.addMultiLineRule(r'"', r'"', self.string_format)
 
         # Comments
-        self.add_rule(r'%.*$', self.comment_format)
-        self.add_multiline_rule('%{', '%}', self.comment_format)
+        self.addRule(r'%.*$', self.comment_format)
+        self.addMultiLineRule('%{', '%}', self.comment_format)
 
         # Built-in functions
-        self.add_rule(r'\berror\b', self.function_format)
-        self.add_rule(r'\bwarning\b', self.function_format)
-        self.add_rule(r'\bsize\b', self.function_format)
-        self.add_rule(r'\bclear\b', self.function_format)
-        self.add_rule(r'\breshape\b', self.function_format)
-        self.add_rule(r'\beye\b', self.function_format)
-        self.add_rule(r'\bones\b', self.function_format)
-        self.add_rule(r'\bzeros\b', self.function_format)
-        self.add_rule(r'\blinspace\b', self.function_format)
-        self.add_rule(r'\blogspace\b', self.function_format)
-        self.add_rule(r'\brand\b', self.function_format)
-        self.add_rule(r'\bexp\b', self.function_format)
-        self.add_rule(r'\blog\b', self.function_format)
-        self.add_rule(r'\blog10\b', self.function_format)
-        self.add_rule(r'\bsqrt\b', self.function_format)
-        self.add_rule(r'\babs\b', self.function_format)
-        self.add_rule(r'\barg\b', self.function_format)
-        self.add_rule(r'\bconj\b', self.function_format)
-        self.add_rule(r'\bimag\b', self.function_format)
-        self.add_rule(r'\breal\b', self.function_format)
-        self.add_rule(r'\bsin\b', self.function_format)
-        self.add_rule(r'\bcos\b', self.function_format)
-        self.add_rule(r'\btan\b', self.function_format)
-        self.add_rule(r'\basin\b', self.function_format)
-        self.add_rule(r'\bacos\b', self.function_format)
-        self.add_rule(r'\batan\b', self.function_format)
-        self.add_rule(r'\batan2\b', self.function_format)
-        self.add_rule(r'\bsinh\b', self.function_format)
-        self.add_rule(r'\bcosh\b', self.function_format)
-        self.add_rule(r'\btanh\b', self.function_format)
-        self.add_rule(r'\basinh\b', self.function_format)
-        self.add_rule(r'\bacosh\b', self.function_format)
-        self.add_rule(r'\batanh\b', self.function_format)
-        self.add_rule(r'\bsum\b', self.function_format)
-        self.add_rule(r'\bprod\b', self.function_format)
-        self.add_rule(r'\bceil\b', self.function_format)
-        self.add_rule(r'\bfloor\b', self.function_format)
-        self.add_rule(r'\bround\b', self.function_format)
-        self.add_rule(r'\bmax\b', self.function_format)
-        self.add_rule(r'\bmin\b', self.function_format)
-        self.add_rule(r'\bsign\b', self.function_format)
-        self.add_rule(r'\bmean\b', self.function_format)
-        self.add_rule(r'\bstd\b', self.function_format)
-        self.add_rule(r'\bcov\b', self.function_format)
+        self.addRule(r'\berror\b', self.function_format)
+        self.addRule(r'\bwarning\b', self.function_format)
+        self.addRule(r'\bsize\b', self.function_format)
+        self.addRule(r'\bclear\b', self.function_format)
+        self.addRule(r'\breshape\b', self.function_format)
+        self.addRule(r'\beye\b', self.function_format)
+        self.addRule(r'\bones\b', self.function_format)
+        self.addRule(r'\bzeros\b', self.function_format)
+        self.addRule(r'\blinspace\b', self.function_format)
+        self.addRule(r'\blogspace\b', self.function_format)
+        self.addRule(r'\brand\b', self.function_format)
+        self.addRule(r'\bexp\b', self.function_format)
+        self.addRule(r'\blog\b', self.function_format)
+        self.addRule(r'\blog10\b', self.function_format)
+        self.addRule(r'\bsqrt\b', self.function_format)
+        self.addRule(r'\babs\b', self.function_format)
+        self.addRule(r'\barg\b', self.function_format)
+        self.addRule(r'\bconj\b', self.function_format)
+        self.addRule(r'\bimag\b', self.function_format)
+        self.addRule(r'\breal\b', self.function_format)
+        self.addRule(r'\bsin\b', self.function_format)
+        self.addRule(r'\bcos\b', self.function_format)
+        self.addRule(r'\btan\b', self.function_format)
+        self.addRule(r'\basin\b', self.function_format)
+        self.addRule(r'\bacos\b', self.function_format)
+        self.addRule(r'\batan\b', self.function_format)
+        self.addRule(r'\batan2\b', self.function_format)
+        self.addRule(r'\bsinh\b', self.function_format)
+        self.addRule(r'\bcosh\b', self.function_format)
+        self.addRule(r'\btanh\b', self.function_format)
+        self.addRule(r'\basinh\b', self.function_format)
+        self.addRule(r'\bacosh\b', self.function_format)
+        self.addRule(r'\batanh\b', self.function_format)
+        self.addRule(r'\bsum\b', self.function_format)
+        self.addRule(r'\bprod\b', self.function_format)
+        self.addRule(r'\bceil\b', self.function_format)
+        self.addRule(r'\bfloor\b', self.function_format)
+        self.addRule(r'\bround\b', self.function_format)
+        self.addRule(r'\bmax\b', self.function_format)
+        self.addRule(r'\bmin\b', self.function_format)
+        self.addRule(r'\bsign\b', self.function_format)
+        self.addRule(r'\bmean\b', self.function_format)
+        self.addRule(r'\bstd\b', self.function_format)
+        self.addRule(r'\bcov\b', self.function_format)
 
         # Numbers
-        self.add_rule(r'\b(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?\b', self.number_format)
-        self.add_rule(r'\b0[xX][0-9a-fA-F]+\b', self.number_format)
-        self.add_rule(r'\b0[oO][0-7]+\b', self.number_format)
-        self.add_rule(r'\b0[bB][0-1]+\b', self.number_format)
+        self.addRule(r'\b(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?\b', self.number_format)
+        self.addRule(r'\b0[xX][0-9a-fA-F]+\b', self.number_format)
+        self.addRule(r'\b0[oO][0-7]+\b', self.number_format)
+        self.addRule(r'\b0[bB][0-1]+\b', self.number_format)
 
         # Keywords
-        self.add_rule(r'\b__FILE__\b', self.keyword_format)
-        self.add_rule(r'\b__LINE__\b', self.keyword_format)
-        self.add_rule(r'\bbreak\b', self.keyword_format)
-        self.add_rule(r'\bcase\b', self.keyword_format)
-        self.add_rule(r'\bcatch\b', self.keyword_format)
-        self.add_rule(r'\bclassdef\b', self.keyword_format)
-        self.add_rule(r'\bcontinue\b', self.keyword_format)
-        self.add_rule(r'\bdo\b', self.keyword_format)
-        self.add_rule(r'\belse\b', self.keyword_format)
-        self.add_rule(r'\belseif\b', self.keyword_format)
-        self.add_rule(r'\bend\b', self.keyword_format)
-        self.add_rule(r'\bend_try_catch\b', self.keyword_format)
-        self.add_rule(r'\bend_unwind_protect\b', self.keyword_format)
-        self.add_rule(r'\bendclassdef\b', self.keyword_format)
-        self.add_rule(r'\bendenumeration\b', self.keyword_format)
-        self.add_rule(r'\bendevents\b', self.keyword_format)
-        self.add_rule(r'\bendfor\b', self.keyword_format)
-        self.add_rule(r'\bendfunction\b', self.keyword_format)
-        self.add_rule(r'\bendif\b', self.keyword_format)
-        self.add_rule(r'\bendmethods\b', self.keyword_format)
-        self.add_rule(r'\bendparfor\b', self.keyword_format)
-        self.add_rule(r'\bendproperties\b', self.keyword_format)
-        self.add_rule(r'\bendswitch\b', self.keyword_format)
-        self.add_rule(r'\bendwhile\b', self.keyword_format)
-        self.add_rule(r'\benumeration\b', self.keyword_format)
-        self.add_rule(r'\bevents\b', self.keyword_format)
-        self.add_rule(r'\bfor\b', self.keyword_format)
-        self.add_rule(r'\bfunction\b', self.keyword_format)
-        self.add_rule(r'\bglobal\b', self.keyword_format)
-        self.add_rule(r'\bif\b', self.keyword_format)
-        self.add_rule(r'\bmethods\b', self.keyword_format)
-        self.add_rule(r'\botherwise\b', self.keyword_format)
-        self.add_rule(r'\bparfor\b', self.keyword_format)
-        self.add_rule(r'\bpersistent\b', self.keyword_format)
-        self.add_rule(r'\bproperties\b', self.keyword_format)
-        self.add_rule(r'\breturn\b', self.keyword_format)
-        self.add_rule(r'\bswitch\b', self.keyword_format)
-        self.add_rule(r'\btry\b', self.keyword_format)
-        self.add_rule(r'\buntil\b', self.keyword_format)
-        self.add_rule(r'\bunwind_protect\b', self.keyword_format)
-        self.add_rule(r'\bunwind_protect_cleanup\b', self.keyword_format)
-        self.add_rule(r'\bwhile\b', self.keyword_format)
+        self.addRule(r'\b__FILE__\b', self.keyword_format)
+        self.addRule(r'\b__LINE__\b', self.keyword_format)
+        self.addRule(r'\bbreak\b', self.keyword_format)
+        self.addRule(r'\bcase\b', self.keyword_format)
+        self.addRule(r'\bcatch\b', self.keyword_format)
+        self.addRule(r'\bclassdef\b', self.keyword_format)
+        self.addRule(r'\bcontinue\b', self.keyword_format)
+        self.addRule(r'\bdo\b', self.keyword_format)
+        self.addRule(r'\belse\b', self.keyword_format)
+        self.addRule(r'\belseif\b', self.keyword_format)
+        self.addRule(r'\bend\b', self.keyword_format)
+        self.addRule(r'\bend_try_catch\b', self.keyword_format)
+        self.addRule(r'\bend_unwind_protect\b', self.keyword_format)
+        self.addRule(r'\bendclassdef\b', self.keyword_format)
+        self.addRule(r'\bendenumeration\b', self.keyword_format)
+        self.addRule(r'\bendevents\b', self.keyword_format)
+        self.addRule(r'\bendfor\b', self.keyword_format)
+        self.addRule(r'\bendfunction\b', self.keyword_format)
+        self.addRule(r'\bendif\b', self.keyword_format)
+        self.addRule(r'\bendmethods\b', self.keyword_format)
+        self.addRule(r'\bendparfor\b', self.keyword_format)
+        self.addRule(r'\bendproperties\b', self.keyword_format)
+        self.addRule(r'\bendswitch\b', self.keyword_format)
+        self.addRule(r'\bendwhile\b', self.keyword_format)
+        self.addRule(r'\benumeration\b', self.keyword_format)
+        self.addRule(r'\bevents\b', self.keyword_format)
+        self.addRule(r'\bfor\b', self.keyword_format)
+        self.addRule(r'\bfunction\b', self.keyword_format)
+        self.addRule(r'\bglobal\b', self.keyword_format)
+        self.addRule(r'\bif\b', self.keyword_format)
+        self.addRule(r'\bmethods\b', self.keyword_format)
+        self.addRule(r'\botherwise\b', self.keyword_format)
+        self.addRule(r'\bparfor\b', self.keyword_format)
+        self.addRule(r'\bpersistent\b', self.keyword_format)
+        self.addRule(r'\bproperties\b', self.keyword_format)
+        self.addRule(r'\breturn\b', self.keyword_format)
+        self.addRule(r'\bswitch\b', self.keyword_format)
+        self.addRule(r'\btry\b', self.keyword_format)
+        self.addRule(r'\buntil\b', self.keyword_format)
+        self.addRule(r'\bunwind_protect\b', self.keyword_format)
+        self.addRule(r'\bunwind_protect_cleanup\b', self.keyword_format)
+        self.addRule(r'\bwhile\b', self.keyword_format)
 
 
 
@@ -431,22 +431,22 @@ class SyntaxHighlighter_SPICE(SyntaxHighlighter):
 
 
     @override
-    def refresh_rules(self):
+    def refreshRules(self):
         self.clear()
 
         # Strings
-        self.add_multiline_rule(r"'", r"'", self.string_format)
-        self.add_multiline_rule(r'"', r'"', self.string_format)
+        self.addMultiLineRule(r"'", r"'", self.string_format)
+        self.addMultiLineRule(r'"', r'"', self.string_format)
 
         # Comments
-        self.add_rule(r'^\*.*$', self.comment_format)
-        self.add_rule(r'\$.*$', self.comment_format)
+        self.addRule(r'^\*.*$', self.comment_format)
+        self.addRule(r'\$.*$', self.comment_format)
 
         # Numbers
-        self.add_rule(r'\b(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?(?:[TGMKmunpf]|Meg|MEG)?\b',\
+        self.addRule(r'\b(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?(?:[TGMKmunpf]|Meg|MEG)?\b',\
                 self.number_format)
 
         # Keywords
-        self.add_rule(r'(?<!\w)\.[a-zA-Z_]+', self.keyword_format)
-        self.add_rule(r'^\+', self.keyword_format)
-        self.add_rule(r'[()]', self.keyword_format)
+        self.addRule(r'(?<!\w)\.[a-zA-Z_]+', self.keyword_format)
+        self.addRule(r'^\+', self.keyword_format)
+        self.addRule(r'[()]', self.keyword_format)

@@ -17,11 +17,11 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Signal, Slot, Qt
 import sys, os
 import time
-
 import platform
+
 from main_window import MainWindow
-from app_version import app_version
-from path_utils import resolve_path
+from app_version import APP_VERSION
+from path_utils import resolvePath
 
 if __name__ == '__main__':
     operating_system = platform.system()
@@ -36,10 +36,10 @@ if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
 
     # Display the splash screen during application startup
-    splash_pix = QtGui.QPixmap(resolve_path('<PROJECTDIR>/src/resources/icons/splash.png'))
+    splash_pix = QtGui.QPixmap(resolvePath('<PROJECTDIR>/src/resources/icons/splash.png'))
     splash = QtWidgets.QSplashScreen(splash_pix)
     splash.show()
-    splash.showMessage(f'MODELngspicer v{app_version} - Loading...', Qt.AlignLeft, Qt.white)
+    splash.showMessage(f'MODELngspicer v{APP_VERSION} - Loading...', Qt.AlignLeft, Qt.white)
     time.sleep(1)
 
     ex  = MainWindow()
