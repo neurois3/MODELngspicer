@@ -126,6 +126,7 @@ class CodeEditorWindow(QtWidgets.QMainWindow):
             return
         self.__code_editor.open_(file_name)
         self.__file_name = file_name
+        self.updateWindowTitle()
 
         root, ext = os.path.splitext(file_name)
         ext = ext.lower()
