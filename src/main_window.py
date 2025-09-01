@@ -97,14 +97,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
         FILE_menu.addSeparator()
 
-        # "File">"Load..."
-        action = QtGui.QAction('&Load...', self)
-        action.triggered.connect(self.load)
+        # "File">"Load Settings..."
+        action = QtGui.QAction('&Load Settings...', self)
+        action.triggered.connect(self.loadIni)
         FILE_menu.addAction(action)
 
-        # "File">"Save..."
-        action = QtGui.QAction('&Save...', self)
-        action.triggered.connect(self.save)
+        # "File">"Save Settings..."
+        action = QtGui.QAction('&Save Settings...', self)
+        action.triggered.connect(self.saveIni)
         FILE_menu.addAction(action)
 
         # "View">"Tiling"
@@ -326,7 +326,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     @Slot()
-    def save(self):
+    def saveIni(self):
         file_name, type_ = QtWidgets.QFileDialog.getSaveFileName(self,\
                 'Save Settings', '', 'INI Files (*.ini)')
         if not file_name:
@@ -376,11 +376,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     @Slot()
-    def load(self):
+    def loadIni(self):
         file_name, type_ = QtWidgets.QFileDialog.getOpenFileName(self,\
                 'Load Settings', '', 'INI Files (*.ini)')
         if not file_name:
             return
+
+        config_dir = os.path.abspath(os.path.dirname(file_name))
+        extra_aliases = {'<CONFIGDIR>': config_dir}
 
         config = configparser.ConfigParser()
         config.read(file_name)
@@ -395,31 +398,43 @@ class MainWindow(QtWidgets.QMainWindow):
         # MainWindow
         if 'MainWindow' in config:
             if 'WindowSize' in config['MainWindow']:
-                size_str = config['MainWindow']['WindowSize']
-                width, height = map(int, size_str.split(','))
-                self.resize(width, height)
+                try:
+                    size_str = config.get('MainWindow', 'WindowSize', fallback='700,350').strip()
+                    width, height = map(int, size_str.split(','))
+                    self.resize(width, height)
+                except (ValueError, AttributeError):
+                    print("Warning: Invalid WindowSize format in MainWindow section.")
 
             if 'WindowLayout' in config['MainWindow']:
-                encoded_state = config['MainWindow']['WindowLayout']
-                state = QtCore.QByteArray(base64.b64decode(encoded_state))
-                self.restoreState(state)
+                try:
+                    encoded_state = config.get('MainWindow', 'WindowLayout')
+                    state = QtCore.QByteArray(base64.b64decode(encoded_state))
+                    self.restoreState(state)
+                except (base64.binascii.Error, TypeError):
+                    print("Warning: Failed to decode or restore MainWindow layout.")
 
         progress.setValue(progress.value() + 1)
 
         # CentralDockArea
         if 'CentralDockArea' in config:
             if 'WindowLayout' in config['CentralDockArea']:
-                encoded_state = config['CentralDockArea']['WindowLayout']
-                state = QtCore.QByteArray(base64.b64decode(encoded_state))
-                self.__central_dock_area.restoreState(state)
+                try:
+                    encoded_state = config.get('CentralDockArea', 'WindowLayout')
+                    state = QtCore.QByteArray(base64.b64decode(encoded_state))
+                    self.__central_dock_area.restoreState(state)
+                except (base64.binascii.Error, TypeError):
+                    print("Warning: Failed to decode or restore CentralDockArea layout.")
 
         progress.setValue(progress.value() + 1)
 
         # Parameters
         if 'Parameters' in config:
             for key in config['Parameters']:
-                value_str = config['Parameters'][key]
-                self.__param_dict[key] = float(value_str)
+                try:
+                    value = config.getfloat('Parameters', key)
+                    self.__param_dict[key] = value
+                except ValueError:
+                    print(f"Warning: Could not convert parameter '{key}' to float.")
                 self.__param_table.update_()
 
         progress.setValue(progress.value() + 1)
@@ -432,51 +447,51 @@ class MainWindow(QtWidgets.QMainWindow):
             if section in config:
 
                 if 'Title' in config[section]:
-                    value = config[section]['Title']
+                    value = config.get(section, 'Title', fallback=f'Page {i+1}').strip()
                     content.setWindowTitle(value)
 
                 if 'Enabled' in config[section]:
-                    value = config[section]['Enabled']
-                    content.setEnabled(value == 'True')
+                    value = config.getboolean(section, 'Enabled', fallback=True)
+                    content.setEnabled(value)
 
                 if 'ScriptFile' in config[section]:
-                    value = config[section]['ScriptFile']
-                    content.setScriptFile(resolvePath(value) if value else '')
+                    value = config.get(section, 'ScriptFile', fallback='').strip()
+                    content.setScriptFile(resolvePath(value, extra_aliases) if value else '')
 
                 if 'DataFile' in config[section]:
-                    value = config[section]['DataFile']
-                    content.setDataFile(resolvePath(value) if value else '')
+                    value = config.get(section, 'DataFile', fallback='').strip()
+                    content.setDataFile(resolvePath(value, extra_aliases) if value else '')
 
                 if 'LogScaleX' in config[section]:
-                    value = config[section]['LogScaleX']
-                    content.graph().setLogScaleX(value == 'True')
+                    value = config.getboolean(section, 'LogScaleX', fallback=False)
+                    content.graph().setLogScaleX(value)
 
                 if 'LogScaleY' in config[section]:
-                    value = config[section]['LogScaleY']
-                    content.graph().setLogScaleY(value == 'True')
+                    value = config.getboolean(section, 'LogScaleY', fallback=False)
+                    content.graph().setLogScaleY(value)
 
                 if 'Coordinates' in config[section]:
-                    value = config[section]['Coordinates']
+                    value = config.get(section, 'Coordinates', fallback='Cartesian').strip()
                     content.graph().setCoordinates(value)
 
                 if 'PolarRadius' in config[section]:
-                    value = config[section]['PolarRadius']
-                    content.graph().setPolarRadius(float(value))
+                    value = config.getfloat(section, 'PolarRadius', fallback=1.0)
+                    content.graph().setPolarRadius(value)
 
                 if 'AxisTitleX' in config[section]:
-                    value = config[section]['AxisTitleX']
+                    value = config.get(section, 'AxisTitleX', fallback='').strip()
                     content.graph().setAxisTitleX(value)
 
                 if 'AxisTitleY' in config[section]:
-                    value = config[section]['AxisTitleY']
+                    value = config.get(section, 'AxisTitleY', fallback='').strip()
                     content.graph().setAxisTitleY(value)
 
                 if 'AxisUnitsX' in config[section]:
-                    value = config[section]['AxisUnitsX']
+                    value = config.get(section, 'AxisUnitsX', fallback='').strip()
                     content.graph().setAxisUnitsX(value)
 
                 if 'AxisUnitsY' in config[section]:
-                    value = config[section]['AxisUnitsY']
+                    value = config.get(section, 'AxisUnitsY', fallback='').strip()
                     content.graph().setAxisUnitsY(value)
 
             # Run simulation and plot results
