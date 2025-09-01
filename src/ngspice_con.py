@@ -17,8 +17,12 @@ import os
 import subprocess
 import shutil
 
+RUN_ENABLED = True
+
 def run(script_name):
     """Executes the ngspice simulation script using 'ngspice_con' command."""
+    if not RUN_ENABLED:
+        return False
 
     if shutil.which('ngspice_con') is None:
         print("Error: 'ngspice_con' command not found. Please check your system PATH.")

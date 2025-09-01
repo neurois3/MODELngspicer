@@ -19,15 +19,15 @@ import sys, os
 import configparser
 import base64
 import pyqtgraph as pg
+import ngspice_con
 
 from ui_manager import UIManager
+from path_utils import resolvePath
+from app_version import APP_VERSION
 from parameter_io import ParameterIO
 from parameter_table import ParameterTable
 from simulation_panel import SimulationPanel
 from code_editor_window import CodeEditorWindow
-
-from path_utils import resolvePath
-from app_version import APP_VERSION
 
 class MainWindow(QtWidgets.QMainWindow):
 
@@ -388,6 +388,9 @@ class MainWindow(QtWidgets.QMainWindow):
         config = configparser.ConfigParser()
         config.read(file_name)
 
+        # Disable ngspice_con
+        ngspice_con.RUN_ENABLED = False
+
         # Progress bar
         steps = 3 + len(self.__central_docks) # MainWindow, CentralDockArea, Parameters, and Pages
         progress = QtWidgets.QProgressDialog('Loading settings...', 'Cancel', 0, steps, self)
@@ -428,6 +431,7 @@ class MainWindow(QtWidgets.QMainWindow):
         progress.setValue(progress.value() + 1)
 
         # Parameters
+        self.__param_dict.clear()
         if 'Parameters' in config:
             for key in config['Parameters']:
                 try:
@@ -494,8 +498,11 @@ class MainWindow(QtWidgets.QMainWindow):
                     value = config.get(section, 'AxisUnitsY', fallback='').strip()
                     content.graph().setAxisUnitsY(value)
 
-            # Run simulation and plot results
-            content.update_()
             progress.setValue(progress.value() + 1)
+
+        # Enable ngspice_con
+        ngspice_con.RUN_ENABLED = True
+        for dock in self.__central_docks:
+            dock.widget().update_()
 
         progress.close()
