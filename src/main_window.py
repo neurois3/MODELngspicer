@@ -21,13 +21,14 @@ import base64
 import pyqtgraph as pg
 import ngspice_con
 
-from ui_manager import UIManager
-from path_utils import resolvePath
 from app_version import APP_VERSION
+from code_editor_window import CodeEditorWindow
 from parameter_io import ParameterIO
 from parameter_table import ParameterTable
+from path_utils import resolvePath
 from simulation_panel import SimulationPanel
-from code_editor_window import CodeEditorWindow
+from summary_viewer import SummaryViewer
+from ui_manager import UIManager
 
 class MainWindow(QtWidgets.QMainWindow):
 
@@ -99,12 +100,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # "File">"Load Settings..."
         action = QtGui.QAction('&Load Settings...', self)
-        action.triggered.connect(self.loadIni)
+        action.triggered.connect(self.loadSettings)
         FILE_menu.addAction(action)
 
         # "File">"Save Settings..."
         action = QtGui.QAction('&Save Settings...', self)
-        action.triggered.connect(self.saveIni)
+        action.triggered.connect(self.saveSettings)
         FILE_menu.addAction(action)
 
         # "View">"Tiling"
@@ -326,7 +327,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     @Slot()
-    def saveIni(self):
+    def saveSettings(self):
         file_name, type_ = QtWidgets.QFileDialog.getSaveFileName(self,\
                 'Save Settings', '', 'INI Files (*.ini)')
         if not file_name:
@@ -376,7 +377,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     @Slot()
-    def loadIni(self):
+    def loadSettings(self):
         file_name, type_ = QtWidgets.QFileDialog.getOpenFileName(self,\
                 'Load Settings', '', 'INI Files (*.ini)')
         if not file_name:
@@ -392,7 +393,7 @@ class MainWindow(QtWidgets.QMainWindow):
         ngspice_con.RUN_ENABLED = False
 
         # Progress bar
-        steps = 3 + len(self.__central_docks) # MainWindow, CentralDockArea, Parameters, and Pages
+        steps = 4 + len(self.__central_docks) # MainWindow, CentralDockArea, Parameters, and Pages
         progress = QtWidgets.QProgressDialog('Loading settings...', 'Cancel', 0, steps, self)
         progress.setWindowModality(Qt.WindowModal)
         progress.setMinimumDuration(0)
@@ -500,9 +501,20 @@ class MainWindow(QtWidgets.QMainWindow):
 
             progress.setValue(progress.value() + 1)
 
-        # Enable ngspice_con
+        # Enable ngspice_con and run simulations
         ngspice_con.RUN_ENABLED = True
         for dock in self.__central_docks:
             dock.widget().update_()
+
+        progress.setValue(progress.value() + 1)
+
+        # Display HTML summary
+        if 'Summary' in config:
+            if 'HtmlBody' in config['Summary']:
+                value = config.get('Summary', 'HtmlBody', fallback='').strip()
+                if value:
+                    self.summary_viewer = SummaryViewer()
+                    self.summary_viewer.openHtml(resolvePath(value, extra_aliases))
+                    self.summary_viewer.show()
 
         progress.close()
