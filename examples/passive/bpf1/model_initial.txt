@@ -1,4 +1,0 @@
-+ Cval1=10p
-+ Lval2=300n
-+ Cval3=253p
-+ Lval4=10n
