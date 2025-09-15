@@ -1,0 +1,124 @@
+<h1>DEMO: Modeling the IRLML6402 P-Channel Power MOSFET (International Rectifier)</h1>
+
+<h2>1. Model Parameters</h2>
+<p>
+MOSFET LEVEL 1 (Shichman-Hodges Model)<br>
+L=1u, W=100u
+</p>
+<p>
+<table>
+    <tr><th>Name</th>
+        <th>Value</th>
+        <th>Unit</th>
+        <th>Description</th></tr>
+
+    <tr><td><em>vto</em></td>
+        <td>-1.013E+00</td>
+        <td>V</td>
+        <td>Zero-bias threshold voltage</td></tr>
+
+    <tr><td><em>kp</em></td>
+        <td>8.786E-02</td>
+        <td>A/V<sup>2</sup></td>
+        <td>Transconductance parameter</td></tr>
+
+    <tr><td><em>gamma</em></td>
+        <td>0.000E+00</td>
+        <td>V<sup>1/2</sup></td>
+        <td>Bulk threshold parameter</td></tr>
+
+    <tr><td><em>phi</em></td>
+        <td>6.000E-01</td>
+        <td>V</td>
+        <td>Surface potential</td></tr>
+
+    <tr><td><em>lambda</em></td>
+        <td>5.687E-02</td>
+        <td>1/V</td>
+        <td>Channel length modulation</td></tr>
+
+    <tr><td><em>rd</em></td>
+        <td>5.000E-03</td>
+        <td>Ω</td>
+        <td>Drain ohmic resistance</td></tr>
+
+    <tr><td><em>rs</em></td>
+        <td>1.349E-02</td>
+        <td>Ω</td>
+        <td>Source ohmic resistance</td></tr>
+
+    <tr><td><em>cbd</em></td>
+        <td>8.122E-10</td>
+        <td>F</td>
+        <td>Zero-bias B-D junction capacitance</td></tr>
+
+    <tr><td><em>cbs</em></td>
+        <td>0.000E+00</td>
+        <td>F</td>
+        <td>Zero-bias B-S junction capacitance</td></tr>
+
+    <tr><td><em>is</em></td>
+        <td>2.894E-13</td>
+        <td>A</td>
+        <td>Bulk junction saturation current</td></tr>
+
+    <tr><td><em>pb</em></td>
+        <td>8.000E-02</td>
+        <td>V</td>
+        <td>Bulk junction potential</td></tr>
+
+    <tr><td><em>cgso</em></td>
+        <td>4.742E-07</td>
+        <td>F/m</td>
+        <td>Gate-source overlap capacitance per meter channel width</td></tr>
+
+    <tr><td><em>cgdo</em></td>
+        <td>1.238E-06</td>
+        <td>F/m</td>
+        <td>Gate-drain overlap capacitance per meter channel width</td></tr>
+
+    <tr><td><em>cgbo</em></td>
+        <td>0.000E+00</td>
+        <td>F/m</td>
+        <td>Gate-bulk overlap capacitance per meter channel width</td></tr>
+
+    <tr><td><em>cj</em></td>
+        <td>0.000E+00</td>
+        <td>F/m<sup>2</sup></td>
+        <td>Zero-bias bulk junction bottom cap. per sq-meter of junction area</td></tr>
+
+    <tr><td><em>mj</em></td>
+        <td>1.000E-01</td>
+        <td>-</td>
+        <td>Bulk junction bottom grading coeff.</td></tr>
+
+    <tr><td><em>kf</em></td>
+        <td>0.000E+00</td>
+        <td>-</td>
+        <td>Flicker noise coefficient</td></tr>
+
+    <tr><td><em>af</em></td>
+        <td>1.000E+00</td>
+        <td>-</td>
+        <td>Flicker noise exponent</td></tr>
+
+    <tr><td><em>fc</em></td>
+        <td>5.000E-01</td>
+        <td>-</td>
+        <td>Coefficient for forward-bias depletion capacitance formula</td></tr>
+
+    <tr><td><em>tnom</em></td>
+        <td>2.700E+01</td>
+        <td>°C</td>
+        <td>Parameter measurement temperature</td></tr>
+</table>
+</p>
+
+<h2>2. Drain Current vs Drain-Source Voltage</h2>
+<p><img src="images/img01.png"></p>
+
+<h2>3. Drain Current vs Gate-Source Voltage</h2>
+<p><img src="images/img02.png"></p>
+
+<h2>4. Capacitance vs Drain-Source Voltage</h2>
+<p><img src="images/img03.png"></p>

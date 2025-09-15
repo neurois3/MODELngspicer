@@ -1,0 +1,26 @@
+D_FORWARD_IV.spice
+* This script performs a DC sweep of forward voltage across a diode
+* to extract its forward current characteristics.
+
+* Diode model
+.model DIODE1 D (
+.include model.txt
++ )
+
+* Test circuit
+VF  n01 0   dc 0        $ Forward voltage source
+VIF n01 n02 dc 0        $ Forward current probe
+D1  n02 0   DIODE1      $ Test diode
+
+.control
+option TEMP=25          $ Set simulation temperature to 25°C
+
+* Sweep VF from 0.3 V to 1.5 V in 0.01 V steps
+dc VF 0.3 1.5 0.01
+
+* Write forward current data to file
+set wr_singlescale
+wrdata D_FORWARD_IV.txt i(VIF)
+
+.endc
+.end

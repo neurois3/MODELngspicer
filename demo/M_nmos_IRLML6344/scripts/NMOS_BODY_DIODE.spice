@@ -1,0 +1,28 @@
+NMOS_BODY_DIODE.spice
+* This script performs a DC sweep of VSD to observe the body diode conduction
+* in an NMOS transistor by measuring the reverse current.
+
+.model NMOS1 NMOS (
++ level=1 L=1u W=100u
+.include model.txt
++ )
+
+* Voltage sources
+VSD 0   dd          dc 0    $ Source-to-Drain voltage source
+VID d   dd          dc 0    $ Current probe
+
+* NMOS transistor instance
+M1  d   0   0   0   NMOS1   $ Test NMOS transistor
+
+.control
+option TEMP=25              $ Set simulation temperature to 25°C
+
+* Sweep VSD from 0.5 V to 1.1 V in 0.01 V steps
+dc VSD 0.5 1.1 0.01
+
+* Write reverse current results to file
+set wr_singlescale
+wrdata NMOS_BODY_DIODE.txt i(VID)
+
+.endc
+.end

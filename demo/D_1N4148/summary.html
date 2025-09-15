@@ -1,0 +1,119 @@
+<h1>DEMO: Modeling the 1N4148 Small-Signal Switching Diode</h1>
+
+<h2>1. Model Parameters</h2>
+<p>
+<table>
+    <tr><th>Name</th>
+        <th>Value</th>
+        <th>Unit</th>
+        <th>Description</th></tr>
+
+    <tr><td><em>is</em></td>
+        <td>4.772E-09</td>
+        <td>A</td>
+        <td>Saturation current</td></tr>
+
+    <tr><td><em>n</em></td>
+        <td>1.931E+00</td>
+        <td>-</td>
+        <td>Emission coefficient</td></tr>
+
+    <tr><td><em>rs</em></td>
+        <td>7.055E-01</td>
+        <td>Ω</td>
+        <td>Ohmic resistance</td></tr>
+
+    <tr><td><em>bv</em></td>
+        <td>1.423E+02</td>
+        <td>V</td>
+        <td>Reverse breakdown voltage</td></tr>
+
+    <tr><td><em>ibv</em></td>
+        <td>1.000E-03</td>
+        <td>A</td>
+        <td>Current at breakdown voltage</td></tr>
+
+    <tr><td><em>nbv</em></td>
+        <td>4.784E+01</td>
+        <td>-</td>
+        <td>Breakdown emission coefficient</td></tr>
+
+    <tr><td><em>ikf</em></td>
+        <td>0.000E+00</td>
+        <td>A</td>
+        <td>Forward knee current</td></tr>
+
+    <tr><td><em>ikr</em></td>
+        <td>5.000E-07</td>
+        <td>A</td>
+        <td>Reverse knee current</td></tr>
+
+    <tr><td><em>jtun</em></td>
+        <td>3.987E-11</td>
+        <td>A</td>
+        <td>Tunneling saturation current</td></tr>
+
+    <tr><td><em>ntun</em></td>
+        <td>4.914E+02</td>
+        <td>-</td>
+        <td>Tunneling emission coefficient</td></tr>
+
+    <tr><td><em>xtitun</em></td>
+        <td>3.000E+00</td>
+        <td>-</td>
+        <td>Tunneling saturation current exponential</td></tr>
+
+    <tr><td><em>cjo</em></td>
+        <td>8.695E-13</td>
+        <td>F</td>
+        <td>Zero-bias junction bottom-wall capacitance</td></tr>
+
+    <tr><td><em>fc</em></td>
+        <td>5.000E-01</td>
+        <td>-</td>
+        <td>Coefficient for forward-bias depletion bottom-wall capacitance formula</td></tr>
+
+    <tr><td><em>m</em></td>
+        <td>2.266E-02</td>
+        <td>-</td>
+        <td>Area junction grading coefficient</td></tr>
+
+    <tr><td><em>vj</em></td>
+        <td>7.000E-01</td>
+        <td>V</td>
+        <td>Junction potential</td></tr>
+
+    <tr><td><em>tt</em></td>
+        <td>1.660E-08</td>
+        <td>sec</td>
+        <td>Transit time</td></tr>
+
+    <tr><td><em>eg</em></td>
+        <td>1.110E+00</td>
+        <td>eV</td>
+        <td>Activation energy</td></tr>
+
+    <tr><td><em>xti</em></td>
+        <td>3.000E+00</td>
+        <td>-</td>
+        <td>Saturation current temperature exponent</td></tr>
+
+    <tr><td><em>tnom</em></td>
+        <td>2.700E+01</td>
+        <td>°C</td>
+        <td>Parameter measurement temperature</td></tr>
+
+</table>
+</p>
+
+<h2>2. Forward Current vs Forward Voltage</h2>
+<p><img src="images/img01.png"></p>
+
+<h2>3. Reverse Current vs Reverse Voltage</h2>
+<p><img src="images/img02.png"></p>
+
+<h2>4. Junction Capacitance vs Reverse Voltage</h2>
+<p><img src="images/img03.png"></p>
+
+<h2>5. Reverse Recovery Time</h2>
+<p><img src="images/img04.png"></p>

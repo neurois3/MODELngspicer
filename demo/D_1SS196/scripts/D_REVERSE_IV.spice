@@ -1,0 +1,28 @@
+D_REVERSE_IV.spice
+* This script performs a DC sweep of reverse voltage across a diode
+* at different ambient temperatures.
+
+* Diode model
+.model DIODE1 D (
+.include model.txt
++ )
+
+* Test circuit
+VR  n01 0   dc 0        $ Reverse voltage source
+VIR n01 n02 dc 0        $ Reverse current probe
+D1  0   n02 DIODE1      $ Test device
+
+.control
+* Sweep the ambient temperature at 25℃, 50℃, 75℃, and 100℃
+foreach Ta 25 50 75 100
+    option TEMP=$Ta     $ Set simulation temperature
+    option GMIN=1e-12   $ Set minimum conductance
+    dc VR 2 80 2        $ Sweep VF from 2 V to 80 V in 2 V steps
+end
+
+* Write reverse current data for each temperature to file
+set wr_singlescale
+wrdata D_REVERSE_IV.txt dc1.i(VIR) dc2.i(VIR) dc3.i(VIR) dc4.i(VIR)
+
+.endc
+.end

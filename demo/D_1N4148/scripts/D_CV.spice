@@ -1,0 +1,46 @@
+D_CV.spice
+* This script performs an AC analysis to extract the junction capacitance
+* of a diode as a function of reverse bias voltage.
+
+* Diode model
+.model DIODE1 D (
+.include model.txt
++ )
+
+* Test circuit
+VR n01 0   dc 0 ac 1   $ AC voltage source
+RS n01 n02 1           $ Sense resistor to measure ac current
+D1 0   n02 DIODE1      $ Test diode (reverse biased)
+
+.control
+* Reverse voltage sweep parameters
+let VR_st = 0           $ Start value of VR
+let VR_sp = 15          $ Stop value of VR
+let VR_step = 0.1       $ Step size for VR sweep
+
+* Calculate number of steps and initialize index
+let count = (VR_sp-VR_st)/VR_step
+let index = 0
+
+* Initialize vectors to store CT and VR values
+let CT_vector = vector(count)
+let VR_vector = VR_st+VR_step*vector(count)
+
+while index lt count
+    alter VR dc VR_vector[index]    $ Set reverse bias voltage
+    ac lin 1 1Meg 1Meg              $ AC analysis at 1 MHz
+
+    $ Calculate Y11 and extract capacitance
+    let Y11 = v(n01,n02)/v(n02)
+    let CT_vector[index] = abs(imag(Y11)/(2*pi*frequency))
+
+    $ Increment loop index
+    let index = index + 1
+end
+
+* Set scale and write data to file
+setscale CT_vector VR_vector
+wrdata D_CV.txt CT_vector
+
+.endc
+.end

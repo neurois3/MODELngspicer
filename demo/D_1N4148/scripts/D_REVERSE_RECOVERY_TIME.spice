@@ -1,0 +1,30 @@
+D_REVERSE_RECOVERY_TIME.spice
+* This script performs a transient analysis to measure the reverse recovery time
+* of a diode when switching from forward to reverse bias.
+
+* Diode model
+.model DIODE1 D (
+.include model.txt
++ )
+
+* Test circuit
+VPULSE  n01 0   dc 0 pulse(0 -6 10n 0.1n 0.1n 50n 100n 1) $ Pulse source
+RSRC    n01 n02 50      $ Source output resistance (50 Ohm)
+RIN     n02 0   50      $ Input resistor
+CIN     n02 n03 0.01u   $ DC blocking capacitor
+RBIAS   n03 n04 2k      $ Bias resistor to set forward current
+VBIAS   n04 0   dc 21.2 $ Bias voltage source for forward conduction
+D1      n03 n05 DIODE1  $ Test diode
+VIF     n05 n06 dc 0    $ Current probe for diode
+ROUT    n06 0   50      $ Output resistor
+RDSO    n06 0   50      $ Oscilloscope input resistance (50 Ohm)
+
+.control
+* Transient analysis: 10 ps step, 20 ns total time
+tran 10p 20n
+
+* Write diode current waveform to file
+wrdata D_REVERSE_RECOVERY_TIME.txt i(VIF)
+
+.endc
+.end

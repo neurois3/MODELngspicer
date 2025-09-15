@@ -1,0 +1,27 @@
+D_FORWARD_IV.spice
+* This script performs a DC sweep of forward voltage across a diode
+* at different ambient temperatures.
+
+* Diode model
+.model DIODE1 D (
+.include model.txt
++ )
+
+* Test circuit
+VF  n01 0   dc 0        $ Forward voltage source
+VIF n01 n02 dc 0        $ Forward current probe
+D1  n02 0   DIODE1      $ Test diode
+
+.control
+* Sweep the ambient temperature at -25℃, 25℃, and 100℃
+foreach Ta -25 25 100
+    option TEMP=$Ta     $ Set simulation temperature
+    dc VF 0.2 1.0 0.01  $ Sweep VF from 0.2 V to 1.0 V in 0.01 V steps
+end
+
+* Write forward current data for each temperature to file
+set wr_singlescale
+wrdata D_FORWARD_IV.txt dc1.i(VIF) dc2.i(VIF) dc3.i(VIF)
+
+.endc
+.end

@@ -1,0 +1,34 @@
+bpf2_S11.spice
+* This script performs an S-parameter analysis of a bandpass filter.
+
+.param
+.include model.txt
++ C7=C5 C8=C4 C9=C3 L10=L2 C11=C1
+
+* Port definitions for S-parameter analysis
+V1  n01 0       dc 0 portnum 1 z0 50
+V2  n06 0       dc 0 portnum 2 z0 50
+
+* Bandpass filter topology
+C1  n01 0       {C1}
+L2  n01 n02     {L2}
+C3  n02 0       {C3}
+C4  n02 n03     {C4}
+C5  n03 0       {C5}
+L6  n03 n04     {L6}
+C7  n04 0       {C7}
+C8  n04 n05     {C8}
+C9  n05 0       {C9}
+L10 n05 n06     {L10}
+C11 n06 0       {C11}
+
+.control
+* S-parameter analysis from 400 MHz to 600 MHz with 200 points
+sp lin 200 400Meg 600Meg
+
+* Write S11 magnitude in dB to file
+set wr_singlescale
+wrdata bpf2_S11.txt db(s_1_1)
+
+.endc
+.end

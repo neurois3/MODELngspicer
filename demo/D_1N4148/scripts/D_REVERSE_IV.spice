@@ -1,0 +1,27 @@
+D_REVERSE_IV.spice
+* This script performs a DC sweep of reverse voltage across a diode
+* to extract its reverse current characteristics, including breakdown behavior.
+
+* Diode model
+.model DIODE1 D (
+.include model.txt
++ )
+
+* Test circuit
+VR  n01 0   dc 0        $ Reverse voltage source
+VIR n01 n02 dc 0        $ Reverse current probe
+D1  0   n02 DIODE1      $ Test diode
+
+.control
+option TEMP=25          $ Set simulation temperature to 25°C
+option GMIN=4e-10       $ Set minimum conductance
+
+* Sweep VR from 10 V to 146 V in 1 V steps
+dc VR 10 146 1
+
+* Write reverse current data to file
+set wr_singlescale
+wrdata D_REVERSE_IV.txt i(VIR)
+
+.endc
+.end

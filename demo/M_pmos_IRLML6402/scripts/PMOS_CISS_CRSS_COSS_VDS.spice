@@ -1,0 +1,61 @@
+PMOS_CISS_CRSS_COSS_VDS.spice
+* This script performs a small-signal SP analysis to extract Ciss, Crss, and Coss
+* of an PMOS transistor as a function of VDS.
+
+.model PMOS1 PMOS (
++ level=1 L=1u W=100u
+.include model.txt
++ )
+
+* Define voltage sources for gate and drain with port numbers for Y-parameter extraction
+VGS 0   g           dc 0 portnum 1 z0 50
+VDS 0   d           dc 0 portnum 2 z0 50
+
+* Instantiate the PMOS device
+M1  d   g   0   0   PMOS1   $ Test PMOS transistor
+
+.control
+option TEMP=25              $ Set simulation temperature
+
+* Sweep parameters for VDS
+let VDS_st = 1              $ Start value of VDS
+let VDS_sp = 20             $ Stop value of VDS
+let VDS_step = 0.1          $ Step size for VDS sweep
+
+* Calculate number of steps and initialize index
+let count = (VDS_sp-VDS_st)/VDS_step + 1
+let index = 0
+
+* Initialize vectors to store capacitance values
+let CISS_vector = vector(count)    $ Input capacitance
+let CRSS_vector = vector(count)    $ Reverse transfer capacitance
+let COSS_vector = vector(count)    $ Output capacitance
+
+* Create vector of VDS values for sweeping
+let VDS_vector = VDS_st+VDS_step*vector(count)
+
+* Begin sweep loop
+while index lt count
+    alter VDS dc VDS_vector[index]  $ Set VDS to current sweep value
+    sp lin 1 1Meg 1Meg              $ Small-signal analysis at 1 MHz
+
+    $ Extract capacitance values from Y-parameters
+    let CISS_vector[index] = abs(imag(Y_1_1)/(2*pi*frequency))
+    let CRSS_vector[index] = abs(imag(Y_1_2)/(2*pi*frequency))
+    let COSS_vector[index] = abs(imag(Y_2_2)/(2*pi*frequency))
+
+    $ Increment loop index
+    let index = index + 1
+end
+
+* Set scale for plotting or writing data
+setscale CISS_vector VDS_vector
+setscale CRSS_vector VDS_vector
+setscale COSS_vector VDS_vector
+
+* Write results to file
+set wr_singlescale
+wrdata PMOS_CISS_CRSS_COSS_VDS.txt CISS_vector CRSS_vector COSS_vector
+
+.endc
+.end

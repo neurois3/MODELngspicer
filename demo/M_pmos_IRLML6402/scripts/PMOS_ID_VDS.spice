@@ -1,0 +1,32 @@
+PMOS_ID_VDS.spice
+* This script performs a DC sweep of VDS for multiple VGS values
+* to extract the drain current (I_D) characteristics of an PMOS transistor.
+
+.model PMOS1 PMOS (
++ level=1 L=1u W=100u
+.include model.txt
++ )
+
+* Voltage sources
+VGS 0   g           dc 0    $ Gate-to-Source voltage source
+VDS 0   dd          dc 0    $ Drain-to-Source voltage source
+VID d   dd          dc 0    $ Current probe for I_D
+
+* PMOS transistor instance
+M1  d   g   0   0   PMOS1   $ Test PMOS transistor
+
+.control
+option TEMP=25              $ Set simulation temperature to 25°C
+foreach VGS_value 2.25 2.5 2.7 3.0 3.5 4.5 5.0 7.0
+    alter VGS dc = $VGS_value       $ Set VGS to current value
+    dc VDS 0.1 15 0.01              $ Sweep VDS from 0.1 V to 15 V in 0.1 V steps
+end
+
+* Write drain current results to file
+set wr_singlescale
+wrdata PMOS_ID_VDS.txt
++ dc1.i(VID) dc2.i(VID) dc3.i(VID) dc4.i(VID)
++ dc5.i(VID) dc6.i(VID) dc7.i(VID) dc8.i(VID) $ Drain current for each VGS sweep
+
+.endc
+.end
