@@ -203,14 +203,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @Slot()
     def openUserGuide_EN(self):
-        absolute_path = resolvePath('<PROJECTDIR>/docs/MODELngspicer_User_Guide.pdf')
+        absolute_path = resolvePath('<APPLICATIONDIR>/docs/MODELngspicer_User_Guide.pdf')
         url = QtCore.QUrl('file:///' + absolute_path)
         QtGui.QDesktopServices.openUrl(url)
 
 
     @Slot()
     def openUserGuide_JP(self):
-        absolute_path = resolvePath('<PROJECTDIR>/docs/MODELngspicer_User_Guide_JP.pdf')
+        absolute_path = resolvePath('<APPLICATIONDIR>/docs/MODELngspicer_User_Guide_JP.pdf')
         url = QtCore.QUrl('file:///' + absolute_path)
         QtGui.QDesktopServices.openUrl(url)
 
@@ -247,6 +247,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 'Export Parameters', '', 'Text Files (*.txt);;All Files (*)')
         if not file_name:
             return
+        file_name = file_name.replace('\\', '/')
 
         parameter_io = ParameterIO()
         parameter_io.write(self.__param_dict, file_name)
@@ -333,6 +334,9 @@ class MainWindow(QtWidgets.QMainWindow):
         if not file_name:
             return
 
+        # <PROJECTDIR>
+        project_dir = os.path.dirname(file_name).replace('\\', '/')
+
         config = configparser.ConfigParser()
         config.optionxform = str
 
@@ -360,8 +364,8 @@ class MainWindow(QtWidgets.QMainWindow):
             config[f'Page-{i+1}'] = {\
                     'Title'         : content.windowTitle(),\
                     'Enabled'       : content.enabled(),\
-                    'ScriptFile'    : content.scriptFile(),\
-                    'DataFile'      : content.dataFile(),\
+                    'ScriptFile'    : content.scriptFile().replace(project_dir, '<PROJECTDIR>'),\
+                    'DataFile'      : content.dataFile().replace(project_dir, '<PROJECTDIR>'),\
                     'AxisTitleX'    : content.graph().axisTitleX(),\
                     'AxisTitleY'    : content.graph().axisTitleY(),\
                     'AxisUnitsX'    : content.graph().axisUnitsX(),\
@@ -383,8 +387,8 @@ class MainWindow(QtWidgets.QMainWindow):
         if not file_name:
             return
 
-        config_dir = os.path.abspath(os.path.dirname(file_name))
-        extra_aliases = {'<CONFIGDIR>': config_dir}
+        project_dir = os.path.dirname(file_name).replace('\\', '/')
+        extra_aliases = {'<PROJECTDIR>': project_dir}
 
         config = configparser.ConfigParser()
         config.read(file_name)
@@ -398,6 +402,8 @@ class MainWindow(QtWidgets.QMainWindow):
         progress.setWindowModality(Qt.WindowModal)
         progress.setMinimumDuration(0)
         progress.setValue(0)
+        PROGRESS_INCREMENT = lambda: progress.setValue(progress.value() + 1)
+        PROGRESS_FINISH = lambda: progress.close()
 
         # MainWindow
         if 'MainWindow' in config:
@@ -417,7 +423,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 except (base64.binascii.Error, TypeError):
                     print("Warning: Failed to decode or restore MainWindow layout.")
 
-        progress.setValue(progress.value() + 1)
+        PROGRESS_INCREMENT()
 
         # CentralDockArea
         if 'CentralDockArea' in config:
@@ -429,7 +435,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 except (base64.binascii.Error, TypeError):
                     print("Warning: Failed to decode or restore CentralDockArea layout.")
 
-        progress.setValue(progress.value() + 1)
+        PROGRESS_INCREMENT()
 
         # Parameters
         self.__param_dict.clear()
@@ -440,9 +446,9 @@ class MainWindow(QtWidgets.QMainWindow):
                     self.__param_dict[key] = value
                 except ValueError:
                     print(f"Warning: Could not convert parameter '{key}' to float.")
-                self.__param_table.update_()
 
-        progress.setValue(progress.value() + 1)
+        self.__param_table.update_()
+        PROGRESS_INCREMENT()
 
         # Pages
         for i, dock in enumerate(self.__central_docks):
@@ -499,22 +505,20 @@ class MainWindow(QtWidgets.QMainWindow):
                     value = config.get(section, 'AxisUnitsY', fallback='').strip()
                     content.graph().setAxisUnitsY(value)
 
-            progress.setValue(progress.value() + 1)
+            PROGRESS_INCREMENT()
 
         # Enable ngspice_con and run simulations
         ngspice_con.RUN_ENABLED = True
         for dock in self.__central_docks:
             dock.widget().update_()
-
-        progress.setValue(progress.value() + 1)
+        PROGRESS_INCREMENT()
 
         # Display HTML summary
         if 'Summary' in config:
-            if 'HtmlBody' in config['Summary']:
-                value = config.get('Summary', 'HtmlBody', fallback='').strip()
+            if 'HTMLBody' in config['Summary']:
+                value = config.get('Summary', 'HTMLBody', fallback='').strip()
                 if value:
                     self.summary_viewer = SummaryViewer()
                     self.summary_viewer.openHtml(resolvePath(value, extra_aliases))
                     self.summary_viewer.show()
-
-        progress.close()
+        PROGRESS_FINISH()

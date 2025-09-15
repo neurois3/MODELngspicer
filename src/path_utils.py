@@ -19,10 +19,10 @@ def resolvePath(path:str, extra_aliases=None) -> str:
     """Resolve known aliases and return absolute path."""
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     aliases = {\
-            '<PROJECTDIR>': base_dir,\
+            '<APPLICATIONDIR>': base_dir,\
             }
     if extra_aliases:
         aliases.update(extra_aliases)
     for alias, real_path in aliases.items():
         path = path.replace(alias, real_path)
-    return os.path.normpath(path)
+    return os.path.normpath(path).replace('\\', '/')

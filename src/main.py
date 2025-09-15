@@ -36,7 +36,7 @@ if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
 
     # Display the splash screen during application startup
-    splash_pix = QtGui.QPixmap(resolvePath('<PROJECTDIR>/src/resources/splashscreen/splash.png'))
+    splash_pix = QtGui.QPixmap(resolvePath('<APPLICATIONDIR>/src/resources/splashscreen/splash.png'))
     splash = QtWidgets.QSplashScreen(splash_pix)
     splash.show()
     splash.showMessage(f'MODELngspicer v{APP_VERSION} - Loading...', Qt.AlignLeft, Qt.white)

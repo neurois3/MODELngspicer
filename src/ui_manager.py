@@ -44,7 +44,7 @@ class UIManager(QtCore.QObject):
         self.__initialized = True
 
         # Set up a search path for image resources
-        search_path = resolvePath('<PROJECTDIR>/src/resources/images')
+        search_path = resolvePath('<APPLICATIONDIR>/src/resources/images')
         QtCore.QDir.addSearchPath('img', search_path)
 
 
@@ -66,7 +66,7 @@ class UIManager(QtCore.QObject):
                 else 'dark_theme.qss'
 
         # Read and apply the stylesheet to the given widget
-        path = resolvePath('<PROJECTDIR>/src/resources/stylesheets/'+stylesheet)
+        path = resolvePath('<APPLICATIONDIR>/src/resources/stylesheets/'+stylesheet)
         try:
             with open(path, 'r') as f:
                 content = f.read()
@@ -75,5 +75,5 @@ class UIManager(QtCore.QObject):
             print(f'Stylesheet not found: {path}')
 
         # Set the application icon for the widget
-        icon_path = resolvePath('<PROJECTDIR>/src/resources/icons/app_icon.png')
+        icon_path = resolvePath('<APPLICATIONDIR>/src/resources/icons/app_icon.png')
         widget.setWindowIcon(QtGui.QIcon(icon_path))
