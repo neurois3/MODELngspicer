@@ -143,13 +143,8 @@ class MainWindow(QtWidgets.QMainWindow):
             VIEW_menu.addAction(self.__central_docks[i].toggleViewAction())
 
         # "Help">"User Guide - English"
-        action = QtGui.QAction('&User Guide - English', self)
-        action.triggered.connect(self.openUserGuide_EN)
-        HELP_menu.addAction(action)
-
-        # "Help">"User Guide - Japanese"
-        action = QtGui.QAction('&User Guide - Japanese', self)
-        action.triggered.connect(self.openUserGuide_JP)
+        action = QtGui.QAction('&User Guide', self)
+        action.triggered.connect(self.openUserGuide)
         HELP_menu.addAction(action)
 
         # "Help">"About"
@@ -202,15 +197,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
     @Slot()
-    def openUserGuide_EN(self):
-        absolute_path = resolvePath('<APPLICATIONDIR>/docs/MODELngspicer_User_Guide.pdf')
-        url = QtCore.QUrl('file:///' + absolute_path)
-        QtGui.QDesktopServices.openUrl(url)
-
-
-    @Slot()
-    def openUserGuide_JP(self):
-        absolute_path = resolvePath('<APPLICATIONDIR>/docs/MODELngspicer_User_Guide_JP.pdf')
+    def openUserGuide(self):
+        absolute_path = resolvePath('<APPLICATIONDIR>/docs/UserGuide.pdf')
         url = QtCore.QUrl('file:///' + absolute_path)
         QtGui.QDesktopServices.openUrl(url)
 
